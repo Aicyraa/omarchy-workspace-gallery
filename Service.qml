@@ -42,11 +42,26 @@ Item {
             if (!exists) root.finishWindowDrag(true)
         }
     }
-    function moveWindowToWorkspace(address, id) {
+    property var pendingWindowMove: null
+    function undoLastAction() {
+        if (workspaceReordering || windowMoveBusy || windowDragAddress || !actionHistory.length) return false
+        var entry = actionHistory[actionHistory.length - 1]
+        if (entry.kind === "reorder") return reorderWorkspaces(entry.slots, entry.order, true)
+        var w = windows.find(function(window) { return window && Model.windowAddress(window.address) === entry.address })
+        if (!Model.canUndoWindowMove(entry, w)) {
+            actionHistory = actionHistory.slice(0, -1)
+            windowMoveFeedback = "Undo unavailable — the window was closed or moved elsewhere"
+            windowMoveMessage.restart()
+            return false
+        }
+        return moveWindowToWorkspace(entry.address, entry.from, true)
+    }
+    function moveWindowToWorkspace(address, id, undoing) {
         address = Model.windowAddress(address); id = Number(id)
-        if (!address || !Number.isInteger(id) || allWorkspaceIds.indexOf(id) < 0 || workspaceReordering || windowMoveBusy) return false
+        if (!address || !Number.isInteger(id) || id < 1 || (!undoing && allWorkspaceIds.indexOf(id) < 0) || workspaceReordering || windowMoveBusy) return false
         var w = windows.find(function(window) { return Model.windowAddress(window.address) === address })
-        if (!Model.canMoveWindow(w, id, allWorkspaceIds)) return false
+        if (!Model.canMoveWindow(w, id, undoing ? allWorkspaceIds.concat([id]) : allWorkspaceIds)) return false
+        pendingWindowMove = {kind: "window", address: address, from: w.workspace.id, to: id, undoing: undoing === true, pid: w.lastIpcObject.pid || 0}
         windowMoveFeedback = "Moving window…"
         windowMoveBusy = true
         windowMove.command = ["hyprctl", "dispatch", 'hl.dsp.window.move({window="address:' + address + '",workspace="' + id + '",follow=false})']
@@ -57,7 +72,15 @@ Item {
         id: windowMove
         stdout: StdioCollector {
             onStreamFinished: {
-                root.windowMoveFeedback = text.trim() === "ok" ? "Window moved — select its workspace to view it" : "Could not move window: " + text.trim()
+                var success = text.trim() === "ok"
+                if (success) {
+                    if (root.pendingWindowMove.undoing) root.actionHistory = root.actionHistory.slice(0, -1)
+                    else root.actionHistory = root.actionHistory.concat([root.pendingWindowMove]).slice(-20)
+                    root.reorderNotice = root.pendingWindowMove.undoing ? "Window move undone" : "Window moved"
+                    root.reorderNoticeVisible = true
+                    reorderNoticeTimer.restart()
+                }
+                root.windowMoveFeedback = success ? "" : "Could not move window: " + text.trim()
                 root.windowMoveBusy = false
                 Hyprland.refreshToplevels(); Hyprland.refreshWorkspaces(); root.revision++
                 windowMoveMessage.restart()
@@ -74,15 +97,14 @@ Item {
     property var reorderSlots: []
     property var reorderMapping: ({})
     property int reorderSelection: 1
-    property var reorderHistory: []
+    property var actionHistory: []
+    readonly property var reorderHistory: actionHistory.filter(function(entry) { return entry.kind === "reorder" })
     property bool reorderNoticeVisible: false
     property string reorderNotice: ""
     property var pendingUndoEntry: null
     property bool reorderIsUndo: false
     function undoReorder() {
-        if (workspaceReordering || !reorderHistory.length) return false
-        var entry = reorderHistory[reorderHistory.length - 1]
-        return reorderWorkspaces(entry.slots, entry.order, true)
+        return actionHistory.length && actionHistory[actionHistory.length - 1].kind === "reorder" ? undoLastAction() : false
     }
     Timer { id: reorderNoticeTimer; interval: 8000; onTriggered: root.reorderNoticeVisible = false }
     function reorderWorkspaces(slots, order, undoing) {
@@ -90,7 +112,7 @@ Item {
         var mapping = Model.workspacePermutation(slots, order)
         if (!mapping || JSON.stringify(slots) === JSON.stringify(order)) return false
         reorderIsUndo = undoing === true
-        pendingUndoEntry = {slots: slots.slice(), order: Model.inverseWorkspaceOrder(slots, order)}
+        pendingUndoEntry = {kind: "reorder", slots: slots.slice(), order: Model.inverseWorkspaceOrder(slots, order)}
         reorderSlots = slots.slice()
         reorderMapping = mapping
         reorderSelection = selectedWorkspace
@@ -110,8 +132,8 @@ Item {
             workspaceNames = names
             persistedEntry = Object.assign({}, persistedEntry, {workspaceNames: names})
             settingsError = ""
-            if (reorderIsUndo) reorderHistory = reorderHistory.slice(0, -1)
-            else reorderHistory = reorderHistory.concat([pendingUndoEntry]).slice(-10)
+            if (reorderIsUndo) actionHistory = actionHistory.slice(0, -1)
+            else actionHistory = actionHistory.concat([pendingUndoEntry]).slice(-20)
             reorderNotice = reorderIsUndo ? "Workspace order restored" : "Workspaces rearranged"
             reorderNoticeVisible = true
             reorderNoticeTimer.restart()

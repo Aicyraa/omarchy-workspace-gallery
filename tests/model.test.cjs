@@ -53,3 +53,9 @@ assert.equal(model.canMoveWindow(moveCandidate,1,[1,2,3]),false);
 assert.equal(model.canMoveWindow(moveCandidate,9,[1,2,3]),false);
 assert.equal(model.canMoveWindow(null,2,[1,2,3]),false);
 assert.equal(model.canMoveWindow({workspace:{id:1},lastIpcObject:{pinned:true}},2,[1,2,3]),false);
+
+const moveUndo={kind:'window',address:'0xabcd',from:1,to:2,pid:42};
+assert.equal(model.canUndoWindowMove(moveUndo,{address:'abcd',workspace:{id:2},lastIpcObject:{pid:42}}),true);
+assert.equal(model.canUndoWindowMove(moveUndo,null),false);
+assert.equal(model.canUndoWindowMove(moveUndo,{address:'abcd',workspace:{id:3},lastIpcObject:{pid:42}}),false);
+assert.equal(model.canUndoWindowMove(moveUndo,{address:'abcd',workspace:{id:2},lastIpcObject:{pid:99}}),false);

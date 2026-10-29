@@ -69,3 +69,10 @@ function canMoveWindow(window, workspace, allowed) {
         && Number.isInteger(workspace) && allowed.indexOf(workspace) >= 0
         && window.workspace.id !== workspace
 }
+
+function canUndoWindowMove(entry, window) {
+    return !!entry && entry.kind === "window" && !!window && !!window.workspace
+        && windowAddress(window.address) === entry.address
+        && window.workspace.id === entry.to
+        && (!entry.pid || (window.lastIpcObject || {}).pid === entry.pid)
+}
