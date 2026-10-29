@@ -65,7 +65,7 @@ Summon it with `omarchy-shell shell toggle jee.overview`. Add a shortcut in your
 Open the normal overview with **Super + Shift + W**. While it is open,
 **Super + Shift + Ctrl + W** raises the perspective into the workspace ring;
 press the same shortcut again to return. It does nothing outside the overview.
-The selected workspace is preserved across the transition. The top bar stays visible.
+The selected workspace is preserved across the transition. The top bar stays mapped underneath the fullscreen overlay.
 
 Drag the backdrop or scroll to rotate the ring. Click a side card to bring it
 forward, then click a window to focus it or press Enter to enter the workspace.
@@ -136,10 +136,9 @@ desktop/overview state and restoring the moved window afterward. Model tests
 cover invalid, pinned, and same-workspace targets. Pointer drag/drop gestures
 still need hands-on testing on each supported display scale.
 
-### Stable top bar during overview
+### Fullscreen overlay without layout changes
 
-The bar remains visible and clickable above the overview. The overview uses
-the monitor's existing reserved work area and reserves no additional space.
-Opening, changing perspective, and closing therefore leave application
-positions, sizes, and bar reservations unchanged. Manual bar hiding still
-works independently.
+The overview fills the entire output on the Wayland overlay layer, above
+applications and the top bar. It ignores reserved areas and reserves no space
+itself. The bar remains mapped underneath, retaining its normal reservation;
+opening or closing the overview therefore does not resize application windows.
