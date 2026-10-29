@@ -29,4 +29,18 @@ Item {
         }
         Text { anchors.centerIn: parent; visible: root.windows.length === 0; text: root.service.searchText.trim() ? (root.miniature ? "" : "No matching windows") : root.miniature ? "+" : "Empty workspace · Enter to switch"; color: ThemeTokens.secondary; font.pixelSize: root.miniature ? 24 : 18 }
     }
+    Rectangle {
+        anchors.fill: parent
+        color: ThemeTokens.alpha(ThemeTokens.accent, 0.12)
+        visible: windowDrop.containsDrag
+        Text { anchors.centerIn: parent; text: "Move window here"; color: ThemeTokens.text; font.pixelSize: 14 }
+    }
+    DropArea {
+        id: windowDrop
+        anchors.fill: parent
+        keys: ["workspace-window"]
+        onEntered: function(drag) { if (!root.service.windowDragAddress || root.service.workspaceReordering || root.service.windowDragWorkspace === root.workspaceId) drag.accepted = false }
+        onDropped: function(drop) { if (root.service.moveWindowToWorkspace(root.service.windowDragAddress, root.workspaceId)) drop.acceptProposedAction() }
+    }
+
 }

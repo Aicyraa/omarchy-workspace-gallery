@@ -46,3 +46,10 @@ assert.deepEqual(plain(model.remapWorkspaceNames({'1':'Code','2':'Web'},{'1':2,'
 assert.deepEqual(plain(model.inverseWorkspaceOrder([1,2,3],[2,3,1])),[3,1,2]);
 assert.deepEqual(plain(model.inverseWorkspaceOrder([1,2,3],[3,1,2])),[2,3,1]);
 assert.equal(model.inverseWorkspaceOrder([1,2,3],[1,1,3]),null);
+
+const moveCandidate = {workspace:{id:1},lastIpcObject:{pinned:false}};
+assert.equal(model.canMoveWindow(moveCandidate,2,[1,2,3]),true);
+assert.equal(model.canMoveWindow(moveCandidate,1,[1,2,3]),false);
+assert.equal(model.canMoveWindow(moveCandidate,9,[1,2,3]),false);
+assert.equal(model.canMoveWindow(null,2,[1,2,3]),false);
+assert.equal(model.canMoveWindow({workspace:{id:1},lastIpcObject:{pinned:true}},2,[1,2,3]),false);

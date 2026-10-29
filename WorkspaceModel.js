@@ -63,3 +63,9 @@ function inverseWorkspaceOrder(slots, order) {
     var mapping = workspacePermutation(slots, order)
     return mapping ? slots.map(function(id) { return mapping[String(id)] }) : null
 }
+
+function canMoveWindow(window, workspace, allowed) {
+    return !!window && !!window.workspace && !(window.lastIpcObject || {}).pinned
+        && Number.isInteger(workspace) && allowed.indexOf(workspace) >= 0
+        && window.workspace.id !== workspace
+}

@@ -31,8 +31,9 @@ Item {
         function select(id: int): void { if (root.opened && root.service && root.service.allWorkspaceIds.indexOf(id) >= 0) root.service.selectWorkspace(id) }
         function reorder(order: string): bool { return root.opened && root.service ? root.service.reorderWorkspaces(root.service.allWorkspaceIds, JSON.parse(order).order) : false }
         function undo(): bool { return root.service ? root.service.undoReorder() : false }
+        function moveWindow(address: string, workspace: int): bool { return root.opened && root.service ? root.service.moveWindowToWorkspace(address, workspace) : false }
         function activate(): void { if (root.opened && root.service) root.service.activate() }
-        function status(): string { return JSON.stringify({opened: root.opened, mode: root.viewMode, transition: root.cameraLift, reordering: root.service ? root.service.workspaceReordering : false, error: root.service ? root.service.settingsError : "", undoCount: root.service ? root.service.reorderHistory.length : 0, workspace: root.service ? root.service.selectedWorkspace : null}) }
+        function status(): string { return JSON.stringify({opened: root.opened, mode: root.viewMode, transition: root.cameraLift, reordering: root.service ? root.service.workspaceReordering : false, error: root.service ? root.service.settingsError : "", undoCount: root.service ? root.service.reorderHistory.length : 0, movingWindow: root.service ? root.service.windowMoveBusy : false, moveFeedback: root.service ? root.service.windowMoveFeedback : "", workspace: root.service ? root.service.selectedWorkspace : null}) }
     }
     property bool searchVisible: false
     property bool settingsVisible: false
@@ -222,7 +223,7 @@ Item {
                 }
                 Text {
                     anchors { bottom: parent.bottom; bottomMargin: 17; horizontalCenter: parent.horizontalCenter }
-                    text: root.service.settingsError || (nameEditor.editing ? "Enter  Save name     Esc  Cancel     Leave blank to reset" : root.searchVisible ? root.service.matchCount + " matching windows     Tab  Select     Enter  Open     Esc  Clear search" : (root.viewMode === "orbit" ? "Drag / scroll  Rotate     ← →  Workspaces     Enter  Open     Ctrl + Shift + Super + W  Lower view" : "← →  Workspaces     Tab  Windows     Enter  Open     F2  Rename     Type to search"))
+                    text: root.service.settingsError || root.service.windowMoveFeedback || (nameEditor.editing ? "Enter  Save name     Esc  Cancel     Leave blank to reset" : root.searchVisible ? root.service.matchCount + " matching windows     Tab  Select     Enter  Open     Esc  Clear search" : (root.viewMode === "orbit" ? "Drag / scroll  Rotate     ← →  Workspaces     Enter  Open     Ctrl + Shift + Super + W  Lower view" : "← →  Workspaces     Tab  Windows     Enter  Open     F2  Rename     Type to search"))
                     color: ThemeTokens.subdued; font.pixelSize: 11
                 }
                 MouseArea { anchors.fill: parent; visible: root.settingsVisible; z: 50; onClicked: { root.settingsVisible = false; keys.forceActiveFocus() } }
@@ -245,10 +246,34 @@ Item {
             transform: Translate { y: root.service && root.service.reducedMotion ? 0 : (1 - root.cameraLift) * 45 - root.cameraLift * 8 }
             sourceComponent: WorkspaceOrbit { service: root.service }
         }
+        Rectangle {
+            id: windowDragGhost
+            x: root.service ? root.service.windowDragX - 18 : 0
+            y: root.service ? root.service.windowDragY - 18 : 0
+            width: 220; height: 40; radius: 0; z: 1000
+            color: ThemeTokens.panel
+            visible: root.opened && root.service !== null && !!root.service.windowDragAddress
+            Drag.active: visible
+            Drag.source: root.service
+            Drag.keys: ["workspace-window"]
+            Drag.hotSpot.x: 18
+            Drag.hotSpot.y: 18
+            Drag.supportedActions: Qt.MoveAction
+            Drag.proposedAction: Qt.MoveAction
+            Text { anchors { fill: parent; margins: 10 } text: root.service ? root.service.windowDragTitle : ""; textFormat: Text.PlainText; color: ThemeTokens.text; font.pixelSize: 12; elide: Text.ElideRight }
+            Connections {
+                target: root.service
+                function onWindowDragEnded(canceled) { if (canceled) windowDragGhost.Drag.cancel(); else windowDragGhost.Drag.drop() }
+            }
+        }
         Item {
             id: keys; focus: true
             Keys.onPressed: event => {
                 if (!root.service || root.service.workspaceReordering) return
+                if (root.service.windowDragAddress) {
+                    if (event.key === Qt.Key_Escape) root.service.finishWindowDrag(true)
+                    event.accepted = true; return
+                }
                 if (event.key === Qt.Key_Z && event.modifiers & Qt.ControlModifier && !root.settingsVisible && !root.searchVisible) {
                     root.service.undoReorder(); event.accepted = true; return
                 }

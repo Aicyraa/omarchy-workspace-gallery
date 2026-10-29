@@ -22,6 +22,56 @@ Item {
         onExited: if (root.lastBarMotionState !== root.opened) root.syncBarMotion()
     }
     Component.onDestruction: Quickshell.execDetached(["omarchy-shell", "jee.bar", "setOverviewHidden", "false"])
+    property string windowDragAddress: ""
+    property string windowDragTitle: ""
+    property int windowDragWorkspace: 0
+    property real windowDragX: 0
+    property real windowDragY: 0
+    property bool windowMoveBusy: false
+    property string windowMoveFeedback: ""
+    signal windowDragEnded(bool canceled)
+    function beginWindowDrag(w, x, y) {
+        if (!opened || workspaceReordering || windowMoveBusy || !w || w.lastIpcObject.pinned) return false
+        windowDragAddress = Model.windowAddress(w.address)
+        windowDragTitle = w.title || "Window"
+        windowDragWorkspace = w.workspace ? w.workspace.id : 0
+        windowDragX = x; windowDragY = y
+        return !!windowDragAddress
+    }
+    function finishWindowDrag(canceled) {
+        if (!windowDragAddress) return
+        windowDragEnded(canceled)
+        windowDragAddress = ""
+        windowDragWorkspace = 0
+    }
+    function moveWindowToWorkspace(address, id) {
+        address = Model.windowAddress(address); id = Number(id)
+        if (!address || !Number.isInteger(id) || allWorkspaceIds.indexOf(id) < 0 || workspaceReordering || windowMoveBusy) return false
+        var w = windows.find(function(window) { return Model.windowAddress(window.address) === address })
+        if (!Model.canMoveWindow(w, id, allWorkspaceIds)) return false
+        windowMoveFeedback = "Moving window…"
+        windowMoveBusy = true
+        windowMove.command = ["hyprctl", "dispatch", 'hl.dsp.window.move({window="address:' + address + '",workspace="' + id + '",follow=false})']
+        windowMove.running = true
+        return true
+    }
+    Process {
+        id: windowMove
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.windowMoveFeedback = text.trim() === "ok" ? "Window moved — select its workspace to view it" : "Could not move window: " + text.trim()
+                root.windowMoveBusy = false
+                Hyprland.refreshToplevels(); Hyprland.refreshWorkspaces(); root.revision++
+                windowMoveMessage.restart()
+            }
+        }
+        onExited: function(code) {
+            if (code !== 0) Qt.callLater(function() {
+                if (root.windowMoveBusy) { root.windowMoveBusy = false; root.windowMoveFeedback = "Could not move window"; windowMoveMessage.restart() }
+            })
+        }
+    }
+    Timer { id: windowMoveMessage; interval: 5000; onTriggered: root.windowMoveFeedback = "" }
     property bool workspaceReordering: false
     property var reorderSlots: []
     property var reorderMapping: ({})
@@ -38,7 +88,7 @@ Item {
     }
     Timer { id: reorderNoticeTimer; interval: 8000; onTriggered: root.reorderNoticeVisible = false }
     function reorderWorkspaces(slots, order, undoing) {
-        if (workspaceReordering || searchText.trim()) return false
+        if (workspaceReordering || windowMoveBusy || windowDragAddress || searchText.trim()) return false
         var mapping = Model.workspacePermutation(slots, order)
         if (!mapping || JSON.stringify(slots) === JSON.stringify(order)) return false
         reorderIsUndo = undoing === true
@@ -223,7 +273,7 @@ Item {
             } catch (error) { console.warn("Overview preferences:", error) }
         }
     }
-    function dismiss() { opened = false; if (shell) shell.hide("jee.overview") }
+    function dismiss() { finishWindowDrag(true); opened = false; if (shell) shell.hide("jee.overview") }
     Connections {
         target: Hyprland
         function onRawEvent(event) { refresh.restart() }

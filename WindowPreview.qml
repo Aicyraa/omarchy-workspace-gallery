@@ -55,5 +55,26 @@ Rectangle {
         Image { id: appIcon; x: 7; anchors.verticalCenter: parent.verticalCenter; width: 19; height: 19; source: root.service.icon(root.service.entryFor(root.windowHandle)) }
         Text { anchors { left: appIcon.right; right: parent.right; verticalCenter: parent.verticalCenter; margins: 8 } text: root.windowHandle ? root.windowHandle.title : ""; color: ThemeTokens.text; elide: Text.ElideRight; font.pixelSize: 12 }
     }
-    MouseArea { id: mouse; anchors.fill: parent; hoverEnabled: true; onClicked: root.activated() }
+    MouseArea {
+        id: mouse
+        anchors.fill: parent; hoverEnabled: true
+        property real pressX: 0
+        property real pressY: 0
+        property bool dragged: false
+        cursorShape: root.service.windowDragAddress ? Qt.ClosedHandCursor : Qt.PointingHandCursor
+        onPressed: function(event) {
+            var point = mapToItem(null, event.x, event.y)
+            pressX = point.x; pressY = point.y; dragged = false
+        }
+        onPositionChanged: function(event) {
+            if (!pressed || root.miniature) return
+            var point = mapToItem(null, event.x, event.y)
+            if (!dragged && Math.hypot(point.x - pressX, point.y - pressY) > 9)
+                dragged = root.service.beginWindowDrag(root.windowHandle, point.x, point.y)
+            if (dragged) { root.service.windowDragX = point.x; root.service.windowDragY = point.y }
+        }
+        onReleased: if (dragged) root.service.finishWindowDrag(false)
+        onCanceled: root.service.finishWindowDrag(true)
+        onClicked: if (!dragged) root.activated()
+    }
 }

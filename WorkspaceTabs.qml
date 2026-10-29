@@ -50,6 +50,18 @@ Item {
                 opacity: tab.selected || tab.moving ? 0.9 : 0.45
                 font.pixelSize: 10
             }
+            Rectangle { anchors.fill: parent; color: ThemeTokens.selectedHover; visible: windowDrop.containsDrag; z: -1 }
+            DropArea {
+                id: windowDrop
+                anchors.fill: parent
+                keys: ["workspace-window"]
+                onEntered: function(drag) {
+                    if (!root.service.windowDragAddress || root.service.workspaceReordering || root.service.windowDragWorkspace === tab.modelData) drag.accepted = false
+                }
+                onDropped: function(drop) {
+                    if (root.service.moveWindowToWorkspace(root.service.windowDragAddress, tab.modelData)) drop.acceptProposedAction()
+                }
+            }
             MouseArea {
                 id: tabHover
                 anchors.fill: parent; hoverEnabled: true
