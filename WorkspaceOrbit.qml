@@ -46,6 +46,7 @@ Item {
         onClicked: if (!moved) root.service.dismiss()
     }
     WheelHandler {
+        enabled: !root.service.windowDragAddress
         onWheel: event => {
             root.wheelDelta += event.angleDelta.y || event.angleDelta.x
             if (Math.abs(root.wheelDelta) >= 90) {

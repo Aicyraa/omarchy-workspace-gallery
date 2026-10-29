@@ -9,6 +9,7 @@ Item {
     property var shell: null
     property var manifest: null
     property bool opened: false
+    property var dragWindowsSnapshot: []
     property string windowDragAddress: ""
     property string windowDragTitle: ""
     property int windowDragWorkspace: 0
@@ -19,6 +20,7 @@ Item {
     signal windowDragEnded(bool canceled)
     function beginWindowDrag(w, x, y) {
         if (!opened || workspaceReordering || windowMoveBusy || !w || w.lastIpcObject.pinned) return false
+        dragWindowsSnapshot = windows.slice()
         windowDragAddress = Model.windowAddress(w.address)
         windowDragTitle = w.title || "Window"
         windowDragWorkspace = w.workspace ? w.workspace.id : 0
@@ -30,6 +32,15 @@ Item {
         windowDragEnded(canceled)
         windowDragAddress = ""
         windowDragWorkspace = 0
+        dragWindowsSnapshot = []
+        refresh.restart()
+    }
+    Timer {
+        interval: 120; repeat: true; running: !!root.windowDragAddress
+        onTriggered: {
+            var exists = Hyprland.toplevels.values.some(function(w) { return w && Model.windowAddress(w.address) === root.windowDragAddress })
+            if (!exists) root.finishWindowDrag(true)
+        }
     }
     function moveWindowToWorkspace(address, id) {
         address = Model.windowAddress(address); id = Number(id)
@@ -138,6 +149,7 @@ Item {
     readonly property real monitorWidth: screen ? screen.width : 1366
     readonly property real monitorHeight: screen ? screen.height : 768
     readonly property var windows: {
+        if (windowDragAddress) return dragWindowsSnapshot
         const r = revision
         return Hyprland.toplevels.values.filter(w => w.lastIpcObject.mapped !== false)
     }
@@ -164,7 +176,7 @@ Item {
     function windowsFor(id) { return rawWindowsFor(id).filter(w => matches(w)) }
     function rawWindowsFor(id) {
         const r = revision
-        return windows.filter(w => w.workspace && (w.workspace.id === id || w.lastIpcObject.pinned) && w.monitor && monitor && w.monitor.id === monitor.id)
+        return windows.filter(w => w && w.workspace && (w.workspace.id === id || w.lastIpcObject.pinned) && w.monitor && monitor && w.monitor.id === monitor.id)
     }
     function entryFor(w) {
         const d = w.lastIpcObject
@@ -269,7 +281,7 @@ Item {
     Timer {
         id: refresh; interval: 80
         onTriggered: {
-            if (root.workspaceReordering) { refresh.restart(); return }
+            if (root.workspaceReordering || root.windowDragAddress) { refresh.restart(); return }
             Hyprland.refreshToplevels(); Hyprland.refreshWorkspaces(); Hyprland.refreshMonitors()
             root.revision++
             root.ensureSearchSelection()

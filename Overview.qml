@@ -154,6 +154,7 @@ Item {
                     Behavior on visualIndex { NumberAnimation { duration: root.service.motionDuration(260); easing.type: Easing.OutCubic } }
                     Timer { id: wheelCooldown; interval: 220 }
                     WheelHandler {
+                        enabled: !root.service.windowDragAddress
                         onWheel: event => {
                             const delta = event.angleDelta.x || event.angleDelta.y
                             if (delta && !wheelCooldown.running) {

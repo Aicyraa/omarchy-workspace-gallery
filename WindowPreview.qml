@@ -11,8 +11,14 @@ Rectangle {
     property bool miniature: false
     signal activated()
     property bool readyCounted: false
+    property string dragSourceAddress: ""
     Component.onCompleted: service.captureViews++
-    Component.onDestruction: { service.captureViews--; if (readyCounted) service.readyCaptures-- }
+    Component.onDestruction: {
+        if (service) {
+            if (dragSourceAddress && service.windowDragAddress === dragSourceAddress) service.finishWindowDrag(true)
+            service.captureViews--; if (readyCounted) service.readyCaptures--
+        }
+    }
     color: ThemeTokens.preview
     radius: 0
     border.width: 0
@@ -71,7 +77,7 @@ Rectangle {
             var point = mapToItem(null, event.x, event.y)
             if (!dragged && Math.hypot(point.x - pressX, point.y - pressY) > 9)
                 dragged = root.service.beginWindowDrag(root.windowHandle, point.x, point.y)
-            if (dragged) { root.service.windowDragX = point.x; root.service.windowDragY = point.y }
+            if (dragged) { root.dragSourceAddress = root.service.windowDragAddress; root.service.windowDragX = point.x; root.service.windowDragY = point.y }
         }
         onReleased: if (dragged) root.service.finishWindowDrag(false)
         onCanceled: root.service.finishWindowDrag(true)
