@@ -42,3 +42,7 @@ assert.deepEqual(plain(model.insertWorkspace([1,2,3,4],1,2)),[2,3,1,4]);
 assert.deepEqual(plain(model.insertWorkspace([1,2,3,4],4,0)),[4,1,2,3]);
 assert.deepEqual(plain(model.workspacePermutation([1,2,3],[2,3,1])),{'1':3,'2':1,'3':2});
 assert.deepEqual(plain(model.remapWorkspaceNames({'1':'Code','2':'Web'},{'1':2,'2':1})),{'1':'Web','2':'Code'});
+
+assert.deepEqual(plain(model.inverseWorkspaceOrder([1,2,3],[2,3,1])),[3,1,2]);
+assert.deepEqual(plain(model.inverseWorkspaceOrder([1,2,3],[3,1,2])),[2,3,1]);
+assert.equal(model.inverseWorkspaceOrder([1,2,3],[1,1,3]),null);

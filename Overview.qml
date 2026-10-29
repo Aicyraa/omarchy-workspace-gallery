@@ -30,8 +30,9 @@ Item {
         function toggle(): bool { return root.togglePerspective() }
         function select(id: int): void { if (root.opened && root.service && root.service.allWorkspaceIds.indexOf(id) >= 0) root.service.selectWorkspace(id) }
         function reorder(order: string): bool { return root.opened && root.service ? root.service.reorderWorkspaces(root.service.allWorkspaceIds, JSON.parse(order).order) : false }
+        function undo(): bool { return root.service ? root.service.undoReorder() : false }
         function activate(): void { if (root.opened && root.service) root.service.activate() }
-        function status(): string { return JSON.stringify({opened: root.opened, mode: root.viewMode, transition: root.cameraLift, reordering: root.service ? root.service.workspaceReordering : false, error: root.service ? root.service.settingsError : "", workspace: root.service ? root.service.selectedWorkspace : null}) }
+        function status(): string { return JSON.stringify({opened: root.opened, mode: root.viewMode, transition: root.cameraLift, reordering: root.service ? root.service.workspaceReordering : false, error: root.service ? root.service.settingsError : "", undoCount: root.service ? root.service.reorderHistory.length : 0, workspace: root.service ? root.service.selectedWorkspace : null}) }
     }
     property bool searchVisible: false
     property bool settingsVisible: false
@@ -196,6 +197,22 @@ Item {
                         }
                     }
                 }
+                Rectangle {
+                    anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 100 }
+                    width: noticeRow.width + 28; height: 36; radius: 0; z: 20
+                    color: ThemeTokens.panel
+                    visible: root.service.reorderNoticeVisible
+                    Row {
+                        id: noticeRow; anchors.centerIn: parent; spacing: 22
+                        Text { text: root.service.reorderNotice; color: ThemeTokens.text; font.pixelSize: 12 }
+                        Text {
+                            text: "Undo  Ctrl+Z"; color: ThemeTokens.accent; font.pixelSize: 12
+                            visible: root.service.reorderHistory.length > 0
+                            opacity: root.service.workspaceReordering ? 0.4 : 1
+                            MouseArea { anchors.fill: parent; enabled: !root.service.workspaceReordering; cursorShape: Qt.PointingHandCursor; onClicked: root.service.undoReorder() }
+                        }
+                    }
+                }
                 WorkspaceName {
                     id: nameEditor
                     service: root.service
@@ -232,6 +249,9 @@ Item {
             id: keys; focus: true
             Keys.onPressed: event => {
                 if (!root.service || root.service.workspaceReordering) return
+                if (event.key === Qt.Key_Z && event.modifiers & Qt.ControlModifier && !root.settingsVisible && !root.searchVisible) {
+                    root.service.undoReorder(); event.accepted = true; return
+                }
                 if (root.viewMode === "orbit" && !root.settingsVisible && !root.searchVisible) {
                     if (event.key === Qt.Key_Escape) root.service.dismiss()
                     else if (event.key === Qt.Key_F2) root.beginRename()

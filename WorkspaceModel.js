@@ -58,3 +58,8 @@ function remapWorkspaceNames(names, mapping) {
     Object.keys(names).forEach(function(id) { next[String(mapping[id] === undefined ? id : mapping[id])] = names[id] })
     return next
 }
+
+function inverseWorkspaceOrder(slots, order) {
+    var mapping = workspacePermutation(slots, order)
+    return mapping ? slots.map(function(id) { return mapping[String(id)] }) : null
+}

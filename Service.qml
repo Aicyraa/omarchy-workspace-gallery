@@ -26,10 +26,23 @@ Item {
     property var reorderSlots: []
     property var reorderMapping: ({})
     property int reorderSelection: 1
-    function reorderWorkspaces(slots, order) {
+    property var reorderHistory: []
+    property bool reorderNoticeVisible: false
+    property string reorderNotice: ""
+    property var pendingUndoEntry: null
+    property bool reorderIsUndo: false
+    function undoReorder() {
+        if (workspaceReordering || !reorderHistory.length) return false
+        var entry = reorderHistory[reorderHistory.length - 1]
+        return reorderWorkspaces(entry.slots, entry.order, true)
+    }
+    Timer { id: reorderNoticeTimer; interval: 8000; onTriggered: root.reorderNoticeVisible = false }
+    function reorderWorkspaces(slots, order, undoing) {
         if (workspaceReordering || searchText.trim()) return false
         var mapping = Model.workspacePermutation(slots, order)
         if (!mapping || JSON.stringify(slots) === JSON.stringify(order)) return false
+        reorderIsUndo = undoing === true
+        pendingUndoEntry = {slots: slots.slice(), order: Model.inverseWorkspaceOrder(slots, order)}
         reorderSlots = slots.slice()
         reorderMapping = mapping
         reorderSelection = selectedWorkspace
@@ -49,6 +62,11 @@ Item {
             workspaceNames = names
             persistedEntry = Object.assign({}, persistedEntry, {workspaceNames: names})
             settingsError = ""
+            if (reorderIsUndo) reorderHistory = reorderHistory.slice(0, -1)
+            else reorderHistory = reorderHistory.concat([pendingUndoEntry]).slice(-10)
+            reorderNotice = reorderIsUndo ? "Workspace order restored" : "Workspaces rearranged"
+            reorderNoticeVisible = true
+            reorderNoticeTimer.restart()
         } else settingsError = result.error || "Could not reorder workspaces"
         Hyprland.refreshToplevels(); Hyprland.refreshWorkspaces(); Hyprland.refreshMonitors()
         workspaceReordering = false
