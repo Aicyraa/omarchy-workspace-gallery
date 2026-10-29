@@ -67,6 +67,15 @@ Item {
         screen: root.service ? root.service.screen : null
         visible: root.opened && root.service !== null && root.service.screen !== null
         anchors { top: true; bottom: true; left: true; right: true }
+        // Keep the bar's reservation untouched. The overview occupies the
+        // existing work area, leaving the top bar visible and clickable.
+        readonly property var reserved: root.service && root.service.monitorData.reserved ? root.service.monitorData.reserved : [0, 0, 0, 0]
+        margins {
+            left: panel.reserved[0] || 0
+            top: panel.reserved[1] || 0
+            right: panel.reserved[2] || 0
+            bottom: panel.reserved[3] || 0
+        }
         exclusiveZone: 0; color: ThemeTokens.overviewScrim
         WlrLayershell.namespace: "jee-overview"
         WlrLayershell.layer: WlrLayer.Overlay

@@ -9,19 +9,6 @@ Item {
     property var shell: null
     property var manifest: null
     property bool opened: false
-    property bool lastBarMotionState: false
-    onOpenedChanged: syncBarMotion()
-    function syncBarMotion() {
-        if (barMotion.running) return
-        lastBarMotionState = opened
-        barMotion.command = ["omarchy-shell", "jee.bar", "setOverviewHidden", opened ? "true" : "false"]
-        barMotion.running = true
-    }
-    Process {
-        id: barMotion
-        onExited: if (root.lastBarMotionState !== root.opened) root.syncBarMotion()
-    }
-    Component.onDestruction: Quickshell.execDetached(["omarchy-shell", "jee.bar", "setOverviewHidden", "false"])
     property string windowDragAddress: ""
     property string windowDragTitle: ""
     property int windowDragWorkspace: 0
