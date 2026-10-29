@@ -1,0 +1,14 @@
+# Local configuration snapshots and runtime artifacts
+/backups/
+__pycache__/
+*.py[cod]
+*.log
+*.qslog
+/screenshots/
+/tmp/
+# Local development harnesses and machine-specific validation notes
+/shell.qml
+/fallback-probe.qml
+/probe/
+/test/
+/VALIDATION.md
