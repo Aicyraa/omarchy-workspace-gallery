@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "jee.overview",
+  "name": "Workspace Overview",
+  "version": "1.2.0",
+  "author": "jee",
+  "description": "Searchable, named workspace previews with configurable motion",
+  "kinds": [
+    "service",
+    "overlay"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml",
+    "overlay": "Overview.qml"
+  }
+}

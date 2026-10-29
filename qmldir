@@ -1,0 +1,11 @@
+singleton ThemeTokens 1.0 ThemeTokens.qml
+Service 1.0 Service.qml
+Overview 1.0 Overview.qml
+WorkspaceScene 1.0 WorkspaceScene.qml
+WindowPreview 1.0 WindowPreview.qml
+WorkspaceName 1.0 WorkspaceName.qml
+OverviewSettings 1.0 OverviewSettings.qml
+
+WorkspaceOrbit 1.0 WorkspaceOrbit.qml
+
+WorkspaceTabs 1.0 WorkspaceTabs.qml
