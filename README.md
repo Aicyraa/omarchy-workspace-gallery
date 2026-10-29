@@ -112,3 +112,26 @@ The normal desktop order is restored after integration tests.
 
 Window previews now have square corners and no outline, with soft rectangular
 shadows for elevation.
+
+### Undo workspace reordering
+
+After a reorder, an eight-second notice offers **Undo**. **Ctrl+Z** also undoes
+the latest reorder while the overview is focused. Up to ten successful
+reorders are retained for the current shell session, including across closing
+and reopening the overview. Failed reorders do not consume history. Undo
+restores numbering and custom-name mapping; it does not close or recreate apps.
+
+### Move a window by dragging
+
+In either perspective, drag a window from the selected workspace onto another
+workspace tab or preview. Valid destinations highlight and the drag preview
+shows the window title. Release to move the window without changing the active
+desktop or closing the overview. Dropping outside a destination, dropping onto
+the same workspace, or pressing Escape cancels. Pinned windows cannot be moved
+this way. Ordinary clicks still focus windows. Tab rearranging is unavailable
+while a window drag or move is in progress.
+
+Validation covered the move dispatcher against live windows, preserving active
+desktop/overview state and restoring the moved window afterward. Model tests
+cover invalid, pinned, and same-workspace targets. Pointer drag/drop gestures
+still need hands-on testing on each supported display scale.
