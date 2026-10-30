@@ -21,7 +21,8 @@ QtObject {
     readonly property color sidebar: blend(text, 0.015)
     readonly property color panel: alpha(background, 0.97)
     readonly property color scrim: alpha(background, 0.42)
-    readonly property color overviewScrim: alpha(background, 0.92)
+    // Same 70% opacity as the terminal, so the compositor blur shows through.
+    readonly property color overviewScrim: alpha(background, 0.70)
     readonly property color preview: alpha(background, 0.85)
     readonly property color caption: alpha(background, 0.90)
     readonly property color heroStart: alpha(background, 0.96)
