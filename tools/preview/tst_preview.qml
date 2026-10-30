@@ -93,10 +93,32 @@ Rectangle {
         service: previewService
         anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 40 }
     }
-    Text {
-        anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 18 }
-        text: scene.mode === 'normal' ? '← →  Workspaces     Tab  Windows     Enter  Open     F2  Rename     Type to search' : 'Drag backdrop / right-drag  Look around     Scroll / ← →  Workspaces     Enter  Open'
-        color: '#737b86'; font.pixelSize: 11
+    // Mirrors the key guide in Overview.qml: keys in one column, labels in the next.
+    Column {
+        anchors { left: parent.left; leftMargin: 30; bottom: parent.bottom; bottomMargin: 17 }
+        spacing: 6
+        Repeater {
+            model: scene.mode === 'normal'
+                ? [{keys: ['←', '→'], label: 'Workspaces'}, {keys: ['Tab'], label: 'Windows'}, {keys: ['Enter'], label: 'Open'}, {keys: ['F2'], label: 'Rename'}, {keys: ['Type'], label: 'Search'}]
+                : [{keys: ['Drag'], label: 'Orbit'}, {keys: ['Ctrl + Scroll'], label: 'Zoom'}, {keys: ['←', '→'], label: 'Workspaces'}, {keys: ['Enter'], label: 'Open'}]
+            Row {
+                required property var modelData
+                spacing: 12
+                Row {
+                    width: scene.mode === 'normal' ? 44 : 76; spacing: 4
+                    Repeater {
+                        model: modelData.keys
+                        Rectangle {
+                            required property string modelData
+                            height: 17; width: keyText.implicitWidth + 12; radius: 5
+                            color: App.ThemeTokens.surface; border.width: 1; border.color: App.ThemeTokens.border
+                            Text { id: keyText; anchors.centerIn: parent; text: parent.modelData; color: App.ThemeTokens.secondary; font.pixelSize: 10 }
+                        }
+                    }
+                }
+                Text { height: 17; verticalAlignment: Text.AlignVCenter; text: modelData.label; color: App.ThemeTokens.subdued; font.pixelSize: 10 }
+            }
+        }
     }
     TestCase {
         name: 'PublicationPreviews'; when: windowShown
