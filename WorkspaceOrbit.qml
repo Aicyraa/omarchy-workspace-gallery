@@ -90,7 +90,8 @@ Item {
         readonly property real focal: radius * 5.5
         readonly property real cp: Math.cos(root.cameraElevation * Math.PI / 180)
         readonly property real sp: Math.sin(root.cameraElevation * Math.PI / 180)
-        readonly property real cardWidth: Math.min(310, radius * 0.78,
+        // The size cap grows with zoom, so zooming enlarges cards, not just spacing.
+        readonly property real cardWidth: Math.min(310 * root.cameraZoom, radius * 0.78,
             2 * radius * Math.sin(Math.PI / Math.max(3, root.count)) * 0.78) * root.service.previewScale
         readonly property real cardHeight: cardWidth * root.service.monitorHeight / root.service.monitorWidth
         readonly property real thickness: cardWidth * 0.035

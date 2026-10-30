@@ -122,6 +122,13 @@ Item {
             mousePress(scene, 80, 60); mouseMove(scene, 190, 20, 30, Qt.LeftButton); mouseRelease(scene, 190, 20)
             compare(orbit.cameraElevation, 22); compare(orbit.cameraYaw, 0)
         }
+        function test_zoom_enlarges_cards_when_size_cap_applies() {
+            scene.width = 1366; scene.height = 768; wait(20)
+            var before = card(1).width
+            orbit.zoomCamera(0.3); wait(20)
+            verify(card(1).width > before * 1.25, 'Zoom must enlarge cards, not only spread the ring')
+            orbit.resetCamera(); scene.width = 1000; scene.height = 600; wait(20)
+        }
         function test_zoom_clamps_between_default_and_max() {
             orbit.zoomCamera(-5); compare(orbit.cameraZoom, 1)
             orbit.zoomCamera(5); compare(orbit.cameraZoom, 2)
