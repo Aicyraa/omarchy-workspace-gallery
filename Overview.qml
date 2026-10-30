@@ -251,10 +251,10 @@ Item {
                         model: hintRow.hintItems()
                         Row {
                             required property var modelData
-                            spacing: 10
+                            spacing: 8
                             // Fixed key column keeps every description aligned.
                             Row {
-                                width: 84; spacing: 5
+                                width: root.viewMode === "orbit" && !root.searchVisible && !nameEditor.editing ? 84 : 50; spacing: 5
                             Repeater {
                                 model: modelData.keys
                                 Rectangle {
