@@ -26,7 +26,7 @@ Item {
     function moveCamera(x, y) {
         if (!dragging) return
         cameraYaw = dragStartYaw - (x - dragStartX) * 0.22
-        cameraElevation = Math.max(12, Math.min(36, dragStartElevation - (y - dragStartY) * 0.12))
+        cameraElevation = Math.max(5, Math.min(50, dragStartElevation - (y - dragStartY) * 0.18))
     }
     function zoomCamera(delta) { cameraZoom = Math.max(1, Math.min(2, cameraZoom + delta)) }
     function resetCamera() { dragging = false; cameraElevation = 22; cameraYaw = 0; cameraZoom = 1 }
@@ -95,6 +95,8 @@ Item {
             2 * radius * Math.sin(Math.PI / Math.max(3, root.count)) * 0.78) * root.service.previewScale
         readonly property real cardHeight: cardWidth * root.service.monitorHeight / root.service.monitorWidth
         readonly property real thickness: cardWidth * 0.035
+        // Raising the camera lifts the ring slightly, so its front edge stays on screen.
+        readonly property real centreY: height / 2 - (root.cameraElevation - 22) * 0.6
 
         // Camera space for a vector relative to the camera: x right, y up, z forward.
         function view(q) { return {x: q.x, y: q.y * cp - q.z * sp, z: -q.y * sp - q.z * cp} }
@@ -105,7 +107,7 @@ Item {
         }
         function screen(p) {
             var v = view({x: p.x, y: p.y - focal * sp, z: p.z - focal * cp})
-            return Qt.point(width / 2 + focal * v.x / v.z, height / 2 - focal * v.y / v.z)
+            return Qt.point(width / 2 + focal * v.x / v.z, centreY - focal * v.y / v.z)
         }
         // Cards face the camera's side of the ring. A small yaw toward the
         // centre keeps side cards readable, and rear cards stay un-mirrored.
@@ -120,7 +122,7 @@ Item {
         function faceMatrix(f) {
             var o = view({x: f.origin.x, y: f.origin.y - focal * sp, z: f.origin.z - focal * cp})
             var a = view(f.t), b = view({x: 0, y: -1, z: 0})
-            var cx = width / 2, cy = height / 2
+            var cx = width / 2, cy = centreY
             return Qt.matrix4x4(
                 focal * a.x + cx * a.z, focal * b.x + cx * b.z, 0, focal * o.x + cx * o.z,
                 -focal * a.y + cy * a.z, -focal * b.y + cy * b.z, 0, -focal * o.y + cy * o.z,

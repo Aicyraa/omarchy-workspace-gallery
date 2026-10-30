@@ -52,7 +52,7 @@ Item {
             }
         }
         function test_cards_are_never_mirrored() {
-            var angles = [0, 45, 90, 180], elevations = [12, 22, 36]
+            var angles = [0, 45, 90, 180], elevations = [5, 22, 50]
             for (var e = 0; e < elevations.length; e++) {
                 for (var a = 0; a < angles.length; a++) {
                     orbit.cameraElevation = elevations[e]; orbit.cameraYaw = angles[a]
@@ -104,12 +104,12 @@ Item {
         }
         function test_camera_elevation_stays_in_bounds() {
             orbit.beginCameraDrag(0, 0); orbit.moveCamera(0, -10000)
-            compare(orbit.cameraElevation, 36)
-            orbit.moveCamera(0, 10000); compare(orbit.cameraElevation, 12)
+            compare(orbit.cameraElevation, 50)
+            orbit.moveCamera(0, 10000); compare(orbit.cameraElevation, 5)
             orbit.dragging = false
         }
         function test_camera_extremes_keep_cards_visible() {
-            var elevations = [12, 36], angles = [0, 45, 90, 180]
+            var elevations = [5, 50], angles = [0, 45, 90, 180]
             for (var e = 0; e < elevations.length; e++) {
                 for (var a = 0; a < angles.length; a++) {
                     orbit.cameraElevation = elevations[e]; orbit.cameraYaw = angles[a]
