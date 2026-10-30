@@ -160,7 +160,7 @@ The ring starts at a **22°** elevation.
 
 ### 🔭 Zoom the ring
 
-- **Keyboard:** <kbd>+</kbd> zooms in and <kbd>−</kbd> zooms out. <kbd>0</kbd> resets the view.
+- **Keyboard:** <kbd>0</kbd> resets the view, including zoom.
 - **Trackpad:** hold <kbd>Ctrl</kbd> and two-finger scroll. Two-finger pinch also works on touchpads that send pinch gestures.
 - **Mouse:** hold <kbd>Ctrl</kbd> and scroll over the ring. Scroll down to zoom back out.
 - Zoom ranges from the default size (**1×**) up to **2×**. The ring can extend past the screen edges when zoomed in.
