@@ -19,7 +19,9 @@ Searchable workspace previews and a 3D workspace ring for Omarchy.
 </div>
 
 <p align="center">
-  <video src="assets/previews/omarchy-workspace-gallery-preview.mp4" controls width="100%"></video>
+
+https://github.com/user-attachments/assets/26bdeebb-0f9c-48dc-b6ae-9da0cce2a47e
+
 </p>
 
 ---
