@@ -240,7 +240,7 @@ Item {
                     id: hintRow
                     visible: !(root.service.settingsError || root.service.windowMoveFeedback)
                     anchors { bottom: parent.bottom; bottomMargin: 17; left: parent.left; leftMargin: 30 }
-                    spacing: 7
+                    spacing: 6
                     function hintItems() {
                         if (nameEditor.editing) return [{keys: ["Enter"], label: "Save name"}, {keys: ["Esc"], label: "Cancel"}, {keys: [], label: "Empty name resets"}]
                         if (root.searchVisible) return [{keys: [], label: root.service.matchCount + " matches"}, {keys: ["Tab"], label: "Select"}, {keys: ["Enter"], label: "Open"}, {keys: ["Esc"], label: "Clear"}]
@@ -251,23 +251,23 @@ Item {
                         model: hintRow.hintItems()
                         Row {
                             required property var modelData
-                            spacing: 8
+                            spacing: 12
                             // Fixed key column keeps every description aligned.
                             Row {
-                                width: root.viewMode === "orbit" && !root.searchVisible && !nameEditor.editing ? 84 : 50; spacing: 5
+                                width: root.viewMode === "orbit" && !root.searchVisible && !nameEditor.editing ? 76 : 44; spacing: 4
                             Repeater {
                                 model: modelData.keys
                                 Rectangle {
                                     required property string modelData
-                                    height: 20; width: keyText.implicitWidth + 14; radius: 6
+                                    height: 17; width: keyText.implicitWidth + 12; radius: 5
                                     color: ThemeTokens.surface; border.width: 1; border.color: ThemeTokens.border
-                                    Text { id: keyText; anchors.centerIn: parent; text: parent.modelData; color: ThemeTokens.secondary; font.pixelSize: 11 }
+                                    Text { id: keyText; anchors.centerIn: parent; text: parent.modelData; color: ThemeTokens.secondary; font.pixelSize: 10 }
                                 }
                             }
                             }
                             Text {
-                                height: 20; verticalAlignment: Text.AlignVCenter
-                                text: modelData.label; color: ThemeTokens.subdued; font.pixelSize: 11
+                                height: 17; verticalAlignment: Text.AlignVCenter
+                                text: modelData.label; color: ThemeTokens.subdued; font.pixelSize: 10
                             }
                         }
                     }
