@@ -18,18 +18,9 @@ Searchable workspace previews and a 3D workspace ring for Omarchy.
 
 </div>
 
-<!-- Demo video: put the file at assets/media/demo.mp4, then uncomment the block below.
 <p align="center">
-  <video src="assets/media/demo.mp4" controls muted width="100%"></video>
+  <video src="assets/previews/omarchy-workspace-gallery-preview.mp4" controls width="100%"></video>
 </p>
--->
-
-<table>
-  <tr>
-    <td width="50%"><img src="preview.png" alt="Workspace ring" width="100%"></td>
-    <td width="50%"><img src="assets/previews/overview.png" alt="Normal overview" width="100%"></td>
-  </tr>
-</table>
 
 ---
 
