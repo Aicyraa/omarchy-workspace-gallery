@@ -73,7 +73,7 @@ Rectangle {
             pressX = point.x; pressY = point.y; dragged = false
         }
         onPositionChanged: function(event) {
-            if (!pressed || root.miniature) return
+            if (!pressed) return
             var point = mapToItem(null, event.x, event.y)
             if (!dragged && Math.hypot(point.x - pressX, point.y - pressY) > 9)
                 dragged = root.service.beginWindowDrag(root.windowHandle, point.x, point.y)

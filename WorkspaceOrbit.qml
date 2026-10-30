@@ -205,11 +205,6 @@ Item {
                         service: root.service; workspaceId: unit.modelData
                         miniature: !unit.selected
                     }
-                    MouseArea {
-                        anchors.fill: parent; enabled: !unit.selected
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.service.enterWorkspace(unit.modelData, "")
-                    }
                 }
             }
         }
