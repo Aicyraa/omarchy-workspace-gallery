@@ -54,11 +54,21 @@ Item {
         onCanceled: root.dragging = false
         onDoubleClicked: root.resetCamera()
     }
+    PinchHandler {
+        id: pinch
+        target: null
+        enabled: !root.dragging && !root.service.windowDragAddress
+        property real startZoom: 1
+        onActiveChanged: if (active) startZoom = root.cameraZoom
+        onActiveScaleChanged: root.cameraZoom = Math.max(1, Math.min(2, startZoom * activeScale))
+    }
     WheelHandler {
         enabled: !root.service.windowDragAddress && !root.dragging
         onWheel: event => {
             if (event.modifiers & Qt.ControlModifier) {
-                root.zoomCamera(event.angleDelta.y * 0.0009)
+                // Touchpads send smooth pixel deltas; mice send notched angle deltas.
+                const steps = event.pixelDelta.y !== 0 ? event.pixelDelta.y / 100 : event.angleDelta.y / 120
+                root.zoomCamera(steps * 0.1)
                 event.accepted = true
                 return
             }

@@ -45,6 +45,8 @@ Item {
         if (typeof initial === "string") service.setSearch(initial)
         Qt.callLater(function() { if (overviewLoader.item) overviewLoader.item.focusSearch() })
     }
+    function zoomRing(delta) { if (orbitLoader.item) orbitLoader.item.zoomCamera(delta) }
+    function resetRing() { if (orbitLoader.item) orbitLoader.item.resetCamera() }
     function clearSearch() { service.setSearch(""); searchVisible = false; keys.forceActiveFocus() }
     function open(payload) {
         var requested = {}
@@ -230,7 +232,7 @@ Item {
                 }
                 Text {
                     anchors { bottom: parent.bottom; bottomMargin: 17; horizontalCenter: parent.horizontalCenter }
-                    text: root.service.settingsError || root.service.windowMoveFeedback || (nameEditor.editing ? "Enter  Save name     Esc  Cancel     Leave blank to reset" : root.searchVisible ? root.service.matchCount + " matching windows     Tab  Select     Enter  Open     Esc  Clear search" : (root.viewMode === "orbit" ? "Drag backdrop / right-drag  Look around     Scroll / ← →  Workspaces     Enter  Open" : "← →  Workspaces     Tab  Windows     Enter  Open     F2  Rename     Type to search"))
+                    text: root.service.settingsError || root.service.windowMoveFeedback || (nameEditor.editing ? "Enter  Save name     Esc  Cancel     Leave blank to reset" : root.searchVisible ? root.service.matchCount + " matching windows     Tab  Select     Enter  Open     Esc  Clear search" : (root.viewMode === "orbit" ? "Drag backdrop / right-drag  Look around     Scroll / ← →  Workspaces     + −  Zoom     0  Reset view     Enter  Open" : "← →  Workspaces     Tab  Windows     Enter  Open     F2  Rename     Type to search"))
                     color: ThemeTokens.subdued; font.pixelSize: 11
                 }
                 MouseArea { anchors.fill: parent; visible: root.settingsVisible; z: 50; onClicked: { root.settingsVisible = false; keys.forceActiveFocus() } }
@@ -245,6 +247,7 @@ Item {
             }
         }
         Loader {
+            id: orbitLoader
             anchors { fill: parent; topMargin: 90; bottomMargin: 94 }
             active: root.opened && root.service !== null && (root.viewMode === "orbit" || root.cameraLift > 0.001)
             enabled: root.viewMode === "orbit"
@@ -289,6 +292,9 @@ Item {
                     else if (event.key === Qt.Key_F2) root.beginRename()
                     else if (event.key === Qt.Key_F && event.modifiers & Qt.ControlModifier) root.beginSearch()
                     else if (event.key === Qt.Key_Comma && event.modifiers & Qt.ControlModifier) root.settingsVisible = !root.settingsVisible
+                    else if (event.key === Qt.Key_Plus || event.key === Qt.Key_Equal) root.zoomRing(0.1)
+                    else if (event.key === Qt.Key_Minus) root.zoomRing(-0.1)
+                    else if (event.key === Qt.Key_0) root.resetRing()
                     else if (event.key === Qt.Key_Left) root.service.moveWorkspace(-1)
                     else if (event.key === Qt.Key_Right) root.service.moveWorkspace(1)
                     else if (event.key === Qt.Key_Up || event.key === Qt.Key_Down) root.service.moveWorkspace((event.key === Qt.Key_Up ? -1 : 1))
