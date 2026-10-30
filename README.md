@@ -32,7 +32,7 @@ Searchable workspace previews and a 3D workspace ring for Omarchy.
 </table>
 
 
-## Features
+### Features
 
 | Feature | Description |
 | --- | --- |
@@ -43,7 +43,7 @@ Searchable workspace previews and a 3D workspace ring for Omarchy.
 | Names and motion | Name workspaces. Adjust preview size, duration, and reduced motion. |
 
 
-## Requirements
+### Requirements
 
 - Omarchy Quattro shell, Hyprland `0.56.2`, Quickshell `0.3.2`, Qt `6.9+`
 - `omarchy`, `omarchy-shell`, `hyprctl`, and `python3` on your PATH
@@ -51,7 +51,7 @@ Searchable workspace previews and a 3D workspace ring for Omarchy.
 No extra packages, accounts, or network services.
 
 
-## Install
+### Install
 
 ```sh
 omarchy plugin add https://github.com/Aicyraa/omarchy-overview.git --enable
@@ -72,7 +72,7 @@ hyprctl configerrors
 ```
 
 
-## Controls
+### Controls
 
 | Action | Input |
 | --- | --- |
@@ -91,7 +91,7 @@ hyprctl configerrors
 Drag a window preview onto another workspace to move it.
 
 
-## Configuration
+### Configuration
 
 - **Rename:** <kbd>F2</kbd>. Names are up to 48 characters. An empty name restores `Workspace N`.
 - **Preview size:** 65–100%.
@@ -100,7 +100,7 @@ Drag a window preview onto another workspace to move it.
 Settings are saved in this plugin's entry in `~/.config/omarchy/shell.json`.
 
 
-## Privacy
+### Privacy
 
 - Plugins run **unsandboxed** with your permissions. Review the code before you enable it.
 - Window previews stay in memory and are never saved to disk.
@@ -108,7 +108,7 @@ Settings are saved in this plugin's entry in `~/.config/omarchy/shell.json`.
 - Recovery journals are kept in `~/.local/state/omarchy/workspace-reorder/`. They hold metadata only, and the last 20 are kept.
 
 
-## Update and remove
+### Update and remove
 
 ```sh
 omarchy plugin update io.github.aicyraa.workspace-gallery
@@ -129,7 +129,7 @@ If the shell still shows old QML after an update, run `omarchy restart shell`. T
 </details>
 
 
-## Troubleshooting
+### Troubleshooting
 
 | Problem | Fix |
 | --- | --- |
@@ -142,7 +142,7 @@ Logs can contain window titles, so redact them before you share them. Report iss
 Not fully tested: multi-monitor reconnection and fractional scaling.
 
 
-## Development
+### Development
 
 ```sh
 omarchy plugin validate .
@@ -155,7 +155,7 @@ QT_QPA_PLATFORM=offscreen QT_QPA_PLATFORMTHEME= QT_QUICK_CONTROLS_STYLE=Basic \
 Regenerate the preview images from a Wayland session with `bash tools/preview/render.sh`.
 
 
-## License
+### License
 
 MIT © 2026 Aicyraa. See [LICENSE](LICENSE).
 
