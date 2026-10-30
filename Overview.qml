@@ -236,22 +236,25 @@ Item {
                     text: root.service.settingsError || root.service.windowMoveFeedback
                     color: ThemeTokens.subdued; font.pixelSize: 11
                 }
-                Row {
+                Column {
                     id: hintRow
                     visible: !(root.service.settingsError || root.service.windowMoveFeedback)
-                    anchors { bottom: parent.bottom; bottomMargin: 17; horizontalCenter: parent.horizontalCenter }
-                    spacing: 26
+                    anchors { bottom: parent.bottom; bottomMargin: 17; left: parent.left; leftMargin: 30 }
+                    spacing: 7
                     function hintItems() {
                         if (nameEditor.editing) return [{keys: ["Enter"], label: "Save name"}, {keys: ["Esc"], label: "Cancel"}, {keys: [], label: "Empty name resets"}]
                         if (root.searchVisible) return [{keys: [], label: root.service.matchCount + " matches"}, {keys: ["Tab"], label: "Select"}, {keys: ["Enter"], label: "Open"}, {keys: ["Esc"], label: "Clear"}]
-                        if (root.viewMode === "orbit") return [{keys: ["Drag"], label: "Orbit"}, {keys: ["Ctrl", "Scroll"], label: "Zoom"}, {keys: ["←", "→"], label: "Workspaces"}, {keys: ["Enter"], label: "Open"}]
+                        if (root.viewMode === "orbit") return [{keys: ["Drag"], label: "Orbit"}, {keys: ["Ctrl + Scroll"], label: "Zoom"}, {keys: ["←", "→"], label: "Workspaces"}, {keys: ["Enter"], label: "Open"}]
                         return [{keys: ["←", "→"], label: "Workspaces"}, {keys: ["Tab"], label: "Windows"}, {keys: ["Enter"], label: "Open"}, {keys: ["F2"], label: "Rename"}, {keys: ["Type"], label: "Search"}]
                     }
                     Repeater {
                         model: hintRow.hintItems()
                         Row {
                             required property var modelData
-                            spacing: 8
+                            spacing: 10
+                            // Fixed key column keeps every description aligned.
+                            Row {
+                                width: 84; spacing: 5
                             Repeater {
                                 model: modelData.keys
                                 Rectangle {
@@ -260,6 +263,7 @@ Item {
                                     color: ThemeTokens.surface; border.width: 1; border.color: ThemeTokens.border
                                     Text { id: keyText; anchors.centerIn: parent; text: parent.modelData; color: ThemeTokens.secondary; font.pixelSize: 11 }
                                 }
+                            }
                             }
                             Text {
                                 height: 20; verticalAlignment: Text.AlignVCenter
