@@ -31,6 +31,7 @@ Searchable workspace previews and a 3D workspace ring for Omarchy.
   </tr>
 </table>
 
+---
 
 ### Features
 
@@ -42,6 +43,7 @@ Searchable workspace previews and a 3D workspace ring for Omarchy.
 | Move and undo | Drag windows between workspaces. Undo up to 20 actions. |
 | Names and motion | Name workspaces. Adjust preview size, duration, and reduced motion. |
 
+---
 
 ### Requirements
 
@@ -50,6 +52,7 @@ Searchable workspace previews and a 3D workspace ring for Omarchy.
 
 No extra packages, accounts, or network services.
 
+---
 
 ### Install
 
@@ -71,6 +74,7 @@ hyprctl reload
 hyprctl configerrors
 ```
 
+---
 
 ### Controls
 
@@ -90,6 +94,7 @@ hyprctl configerrors
 
 Drag a window preview onto another workspace to move it.
 
+---
 
 ### Configuration
 
@@ -99,6 +104,7 @@ Drag a window preview onto another workspace to move it.
 
 Settings are saved in this plugin's entry in `~/.config/omarchy/shell.json`.
 
+---
 
 ### Privacy
 
@@ -107,6 +113,7 @@ Settings are saved in this plugin's entry in `~/.config/omarchy/shell.json`.
 - Nothing is sent to a remote service.
 - Recovery journals are kept in `~/.local/state/omarchy/workspace-reorder/`. They hold metadata only, and the last 20 are kept.
 
+---
 
 ### Update and remove
 
@@ -128,6 +135,7 @@ If the shell still shows old QML after an update, run `omarchy restart shell`. T
 
 </details>
 
+---
 
 ### Troubleshooting
 
@@ -141,6 +149,7 @@ Logs can contain window titles, so redact them before you share them. Report iss
 
 Not fully tested: multi-monitor reconnection and fractional scaling.
 
+---
 
 ### Development
 
@@ -154,6 +163,7 @@ QT_QPA_PLATFORM=offscreen QT_QPA_PLATFORMTHEME= QT_QUICK_CONTROLS_STYLE=Basic \
 
 Regenerate the preview images from a Wayland session with `bash tools/preview/render.sh`.
 
+---
 
 ### License
 
