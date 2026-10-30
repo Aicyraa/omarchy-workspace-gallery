@@ -63,6 +63,8 @@ Item {
         onActiveScaleChanged: root.cameraZoom = Math.max(1, Math.min(2, startZoom * activeScale))
     }
     WheelHandler {
+        // Wayland reports touchpads and mice as device types the default filter drops.
+        acceptedDevices: PointerDevice.AllDevices
         enabled: !root.service.windowDragAddress && !root.dragging
         onWheel: event => {
             if (event.modifiers & Qt.ControlModifier) {
