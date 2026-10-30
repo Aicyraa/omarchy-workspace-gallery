@@ -68,7 +68,7 @@ def main():
         try:
             config_path = Path.home() / '.config/omarchy/shell.json'
             config = json.loads(config_path.read_text())
-            entry = next((e for e in config.get('plugins', []) if isinstance(e, dict) and e.get('id') == 'jee.overview'), None)
+            entry = next((e for e in config.get('plugins', []) if isinstance(e, dict) and e.get('id') == 'io.github.aicyraa.workspace-gallery'), None)
             old_names = dict(entry.get('workspaceNames', {})) if entry else {}
             names = {str(mapping.get(int(key), int(key))): value for key, value in old_names.items() if str(key).isdigit()}
             if entry is not None and names != old_names:
