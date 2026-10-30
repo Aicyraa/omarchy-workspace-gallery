@@ -18,7 +18,8 @@ Item {
         NumberAnimation { duration: root.service ? root.service.motionDuration(360) : 360; easing.type: Easing.InOutCubic }
     }
     function togglePerspective() {
-        if (!opened || !service || !service.opened) return false
+        if (!opened) return shell ? shell.summon("io.github.aicyraa.workspace-gallery", '{"view":"orbit"}') === true : false
+        if (!service || !service.opened) return false
         searchVisible = false; settingsVisible = false
         service.setSearch("")
         viewMode = viewMode === "orbit" ? "classic" : "orbit"
@@ -26,7 +27,7 @@ Item {
         return true
     }
     IpcHandler {
-        target: "jee.overview.perspective"
+        target: "io.github.aicyraa.workspace-gallery.perspective"
         function toggle(): bool { return root.togglePerspective() }
         function select(id: int): void { if (root.opened && root.service && root.service.allWorkspaceIds.indexOf(id) >= 0) root.service.selectWorkspace(id) }
         function reorder(order: string): bool { return root.opened && root.service ? root.service.reorderWorkspaces(root.service.allWorkspaceIds, JSON.parse(order).order) : false }
@@ -46,8 +47,10 @@ Item {
     }
     function clearSearch() { service.setSearch(""); searchVisible = false; keys.forceActiveFocus() }
     function open(payload) {
-        viewMode = "classic"
-        if (!service && shell) service = shell.serviceFor("jee.overview")
+        var requested = {}
+        try { requested = JSON.parse(payload || "{}") } catch (error) { }
+        viewMode = requested.view === "orbit" ? "orbit" : "classic"
+        if (!service && shell) service = shell.serviceFor("io.github.aicyraa.workspace-gallery")
         if (!service) { console.warn("Overview service unavailable"); return }
         service.setSearch(""); searchVisible = false; settingsVisible = false
         service.selectWorkspace(Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : 1)
@@ -60,7 +63,7 @@ Item {
     function close() { opened = false; settingsVisible = false; searchVisible = false; if (service) service.opened = false }
     Connections {
         target: root.service
-        function onOpenedChanged() { if (!root.service.opened && root.opened) { root.opened = false; if (root.shell) root.shell.hide("jee.overview") } }
+        function onOpenedChanged() { if (!root.service.opened && root.opened) { root.opened = false; if (root.shell) root.shell.hide("io.github.aicyraa.workspace-gallery") } }
     }
     PanelWindow {
         id: panel
@@ -71,7 +74,7 @@ Item {
         // changing the desktop's reserved space or application geometry.
         exclusionMode: ExclusionMode.Ignore
         color: ThemeTokens.overviewScrim
-        WlrLayershell.namespace: "jee-overview"
+        WlrLayershell.namespace: "aicyraa-workspace-gallery"
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: root.opened ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
         Loader {
@@ -227,7 +230,7 @@ Item {
                 }
                 Text {
                     anchors { bottom: parent.bottom; bottomMargin: 17; horizontalCenter: parent.horizontalCenter }
-                    text: root.service.settingsError || root.service.windowMoveFeedback || (nameEditor.editing ? "Enter  Save name     Esc  Cancel     Leave blank to reset" : root.searchVisible ? root.service.matchCount + " matching windows     Tab  Select     Enter  Open     Esc  Clear search" : (root.viewMode === "orbit" ? "Drag / scroll  Rotate     ← →  Workspaces     Enter  Open     Ctrl + Shift + Super + W  Lower view" : "← →  Workspaces     Tab  Windows     Enter  Open     F2  Rename     Type to search"))
+                    text: root.service.settingsError || root.service.windowMoveFeedback || (nameEditor.editing ? "Enter  Save name     Esc  Cancel     Leave blank to reset" : root.searchVisible ? root.service.matchCount + " matching windows     Tab  Select     Enter  Open     Esc  Clear search" : (root.viewMode === "orbit" ? "Drag backdrop / right-drag  Look around     Scroll / ← →  Workspaces     Enter  Open" : "← →  Workspaces     Tab  Windows     Enter  Open     F2  Rename     Type to search"))
                     color: ThemeTokens.subdued; font.pixelSize: 11
                 }
                 MouseArea { anchors.fill: parent; visible: root.settingsVisible; z: 50; onClicked: { root.settingsVisible = false; keys.forceActiveFocus() } }

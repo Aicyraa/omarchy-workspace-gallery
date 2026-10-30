@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Shapes
 import "WorkspaceModel.js" as Model
 
 Item {
@@ -35,6 +36,7 @@ Item {
             Accessible.selected: selected
             Accessible.onPressAction: root.service.selectWorkspace(modelData)
             Rectangle {
+                visible: tab.occupied
                 anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 8 }
                 width: tab.selected || tab.moving ? 34 : 15
                 height: tab.selected || tab.moving ? 5 : 3
@@ -42,6 +44,21 @@ Item {
                 color: tab.selected || tab.moving ? ThemeTokens.accent : ThemeTokens.secondary
                 opacity: tab.moving || tab.selected ? 1 : tabHover.containsMouse ? 0.9 : tab.occupied ? 0.6 : 0.28
                 Behavior on width { NumberAnimation { duration: root.service.motionDuration(160) } }
+            }
+            Shape {
+                id: emptyTabGuide
+                anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 4 }
+                width: 34; height: 14
+                visible: !tab.occupied
+                antialiasing: true
+                ShapePath {
+                    fillColor: "transparent"
+                    strokeColor: tab.selected || tab.moving ? ThemeTokens.accent : ThemeTokens.alpha(ThemeTokens.text, 0.65)
+                    strokeWidth: 1
+                    strokeStyle: ShapePath.DashLine
+                    dashPattern: [3, 2]
+                    PathPolyline { path: [Qt.point(1, 1), Qt.point(33, 1), Qt.point(33, 13), Qt.point(1, 13), Qt.point(1, 1)] }
+                }
             }
             Text {
                 anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 2 }

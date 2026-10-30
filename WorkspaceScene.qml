@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Shapes
 
 Item {
     id: root
@@ -11,6 +12,26 @@ Item {
         width: root.service.monitorWidth * root.factor
         height: root.service.monitorHeight * root.factor
         anchors.centerIn: parent
+        Shape {
+            id: emptyGuide
+            anchors.fill: parent
+            anchors.margins: root.miniature ? 8 : 18
+            visible: root.windows.length === 0 && !root.service.searchText.trim()
+            antialiasing: true
+            ShapePath {
+                fillColor: "transparent"
+                strokeColor: ThemeTokens.alpha(ThemeTokens.text, root.miniature ? 0.85 : 0.65)
+                strokeWidth: root.miniature ? 1.5 : 2
+                strokeStyle: ShapePath.DashLine
+                dashPattern: [6, 5]
+                joinStyle: ShapePath.MiterJoin
+                PathPolyline {
+                    path: [Qt.point(1, 1), Qt.point(emptyGuide.width - 1, 1),
+                           Qt.point(emptyGuide.width - 1, emptyGuide.height - 1),
+                           Qt.point(1, emptyGuide.height - 1), Qt.point(1, 1)]
+                }
+            }
+        }
         Repeater {
             model: root.windows
             WindowPreview {
@@ -27,7 +48,16 @@ Item {
                 onActivated: { if (miniature) service.selectWorkspace(root.workspaceId); else service.focusWindow(modelData) }
             }
         }
-        Text { anchors.centerIn: parent; visible: root.windows.length === 0; text: root.service.searchText.trim() ? (root.miniature ? "" : "No matching windows") : root.miniature ? "+" : "Empty workspace · Enter to switch"; color: ThemeTokens.secondary; font.pixelSize: root.miniature ? 24 : 18 }
+        Text {
+            anchors.centerIn: parent
+            width: Math.max(1, parent.width - 32)
+            visible: root.windows.length === 0
+            text: root.service.searchText.trim() ? (root.miniature ? "" : "No matching windows") : root.miniature ? "+" : "Empty workspace · Enter to switch"
+            color: ThemeTokens.secondary
+            font.pixelSize: root.miniature ? 24 : Math.min(18, Math.max(12, parent.width / 26))
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+        }
     }
     Rectangle {
         anchors.fill: parent

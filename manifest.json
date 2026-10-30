@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "jee.overview",
-  "name": "Workspace Overview",
+  "id": "io.github.aicyraa.workspace-gallery",
+  "name": "Workspace Gallery",
   "version": "1.2.0",
-  "author": "jee",
+  "author": "Aicyraa",
   "description": "Searchable, named workspace previews with configurable motion",
   "kinds": [
     "service",
@@ -13,5 +13,6 @@
   "entryPoints": {
     "service": "Service.qml",
     "overlay": "Overview.qml"
-  }
+  },
+  "license": "MIT"
 }

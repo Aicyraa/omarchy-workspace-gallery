@@ -160,7 +160,7 @@ Item {
     property int animationDuration: 300
     property bool reducedMotion: false
     property string settingsError: ""
-    property var persistedEntry: ({id: "jee.overview"})
+    property var persistedEntry: ({id: "io.github.aicyraa.workspace-gallery"})
     property bool preferencesLoaded: false
     readonly property var monitor: Hyprland.focusedMonitor
     readonly property var screen: {
@@ -250,8 +250,8 @@ Item {
     function saveSettings(values) {
         settingsError = ""
         // The host replaces an inline entry; always send the complete merged entry.
-        const merged = Object.assign({}, persistedEntry, values, {id: "jee.overview"})
-        if (!preferencesLoaded || !shell || shell.updateEntryInline("jee.overview", merged) === false) {
+        const merged = Object.assign({}, persistedEntry, values, {id: "io.github.aicyraa.workspace-gallery"})
+        if (!preferencesLoaded || !shell || shell.updateEntryInline("io.github.aicyraa.workspace-gallery", merged) === false) {
             settingsError = "Could not save your preferences. Try again."
             return false
         }
@@ -283,7 +283,7 @@ Item {
         onLoaded: {
             try {
                 const config = JSON.parse(text())
-                const entry = (config.plugins || []).find(p => p.id === "jee.overview") || {}
+                const entry = (config.plugins || []).find(p => p.id === "io.github.aicyraa.workspace-gallery") || {}
                 const settings = Model.settings(entry)
                 root.persistedEntry = entry
                 root.preferencesLoaded = true
@@ -294,7 +294,7 @@ Item {
             } catch (error) { console.warn("Overview preferences:", error) }
         }
     }
-    function dismiss() { finishWindowDrag(true); opened = false; if (shell) shell.hide("jee.overview") }
+    function dismiss() { finishWindowDrag(true); opened = false; if (shell) shell.hide("io.github.aicyraa.workspace-gallery") }
     Connections {
         target: Hyprland
         function onRawEvent(event) { refresh.restart() }
