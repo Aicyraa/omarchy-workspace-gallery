@@ -51,6 +51,22 @@ Item {
                 }
             }
         }
+        function test_cards_are_never_mirrored() {
+            var angles = [0, 45, 90, 180], elevations = [12, 22, 36]
+            for (var e = 0; e < elevations.length; e++) {
+                for (var a = 0; a < angles.length; a++) {
+                    orbit.cameraElevation = elevations[e]; orbit.cameraYaw = angles[a]
+                    for (var id = 1; id <= 5; id++) {
+                        var item = card(id)
+                        var origin = item.mapToItem(scene, 0, 0)
+                        var right = item.mapToItem(scene, item.width, 0)
+                        var down = item.mapToItem(scene, 0, item.height)
+                        verify(right.x > origin.x, 'card ' + id + ' is mirrored at yaw ' + angles[a])
+                        verify(down.y > origin.y, 'card ' + id + ' is upside down at yaw ' + angles[a])
+                    }
+                }
+            }
+        }
         function test_projected_click_enters_chosen_workspace() {
             var point = center(2)
             mouseClick(scene, point.x, point.y)
