@@ -228,10 +228,44 @@ Item {
                     width: Math.min(implicitWidth, parent.width - 64); height: 36
                     onFinished: keys.forceActiveFocus()
                 }
+                // Feedback replaces the key legend while it is shown.
                 Text {
+                    visible: !!(root.service.settingsError || root.service.windowMoveFeedback)
                     anchors { bottom: parent.bottom; bottomMargin: 17; horizontalCenter: parent.horizontalCenter }
-                    text: root.service.settingsError || root.service.windowMoveFeedback || (nameEditor.editing ? "Enter  Save name     Esc  Cancel     Leave blank to reset" : root.searchVisible ? root.service.matchCount + " matching windows     Tab  Select     Enter  Open     Esc  Clear search" : (root.viewMode === "orbit" ? "Drag backdrop / right-drag  Look around     Scroll / ← →  Workspaces     Enter  Open" :"← →  Workspaces     Tab  Windows     Enter  Open     F2  Rename     Type to search"))
+                    text: root.service.settingsError || root.service.windowMoveFeedback
                     color: ThemeTokens.subdued; font.pixelSize: 11
+                }
+                Row {
+                    id: hintRow
+                    visible: !(root.service.settingsError || root.service.windowMoveFeedback)
+                    anchors { bottom: parent.bottom; bottomMargin: 17; horizontalCenter: parent.horizontalCenter }
+                    spacing: 26
+                    function hintItems() {
+                        if (nameEditor.editing) return [{keys: ["Enter"], label: "Save name"}, {keys: ["Esc"], label: "Cancel"}, {keys: [], label: "Empty name resets"}]
+                        if (root.searchVisible) return [{keys: [], label: root.service.matchCount + " matches"}, {keys: ["Tab"], label: "Select"}, {keys: ["Enter"], label: "Open"}, {keys: ["Esc"], label: "Clear"}]
+                        if (root.viewMode === "orbit") return [{keys: ["Drag"], label: "Orbit"}, {keys: ["Ctrl", "Scroll"], label: "Zoom"}, {keys: ["←", "→"], label: "Workspaces"}, {keys: ["Enter"], label: "Open"}]
+                        return [{keys: ["←", "→"], label: "Workspaces"}, {keys: ["Tab"], label: "Windows"}, {keys: ["Enter"], label: "Open"}, {keys: ["F2"], label: "Rename"}, {keys: ["Type"], label: "Search"}]
+                    }
+                    Repeater {
+                        model: hintRow.hintItems()
+                        Row {
+                            required property var modelData
+                            spacing: 8
+                            Repeater {
+                                model: modelData.keys
+                                Rectangle {
+                                    required property string modelData
+                                    height: 20; width: keyText.implicitWidth + 14; radius: 6
+                                    color: ThemeTokens.surface; border.width: 1; border.color: ThemeTokens.border
+                                    Text { id: keyText; anchors.centerIn: parent; text: parent.modelData; color: ThemeTokens.secondary; font.pixelSize: 11 }
+                                }
+                            }
+                            Text {
+                                height: 20; verticalAlignment: Text.AlignVCenter
+                                text: modelData.label; color: ThemeTokens.subdued; font.pixelSize: 11
+                            }
+                        }
+                    }
                 }
                 MouseArea { anchors.fill: parent; visible: root.settingsVisible; z: 50; onClicked: { root.settingsVisible = false; keys.forceActiveFocus() } }
                 OverviewSettings {
