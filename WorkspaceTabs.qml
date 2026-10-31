@@ -63,6 +63,7 @@ Item {
             Text {
                 anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 2 }
                 text: tab.modelData
+                textFormat: Text.PlainText
                 color: tab.selected || tab.moving ? ThemeTokens.text : ThemeTokens.secondary
                 opacity: tab.selected || tab.moving ? 0.9 : 0.45
                 font.pixelSize: 10

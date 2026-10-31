@@ -213,7 +213,7 @@ Item {
                     visible: root.service.reorderNoticeVisible
                     Row {
                         id: noticeRow; anchors.centerIn: parent; spacing: 22
-                        Text { text: root.service.reorderNotice; color: ThemeTokens.text; font.pixelSize: 12 }
+                        Text { text: root.service.reorderNotice; textFormat: Text.PlainText; color: ThemeTokens.text; font.pixelSize: 12 }
                         Text {
                             text: "Undo  Ctrl+Z"; color: ThemeTokens.accent; font.pixelSize: 12
                             visible: root.service.actionHistory.length > 0
@@ -234,6 +234,7 @@ Item {
                     visible: !!(root.service.settingsError || root.service.windowMoveFeedback)
                     anchors { bottom: parent.bottom; bottomMargin: 17; horizontalCenter: parent.horizontalCenter }
                     text: root.service.settingsError || root.service.windowMoveFeedback
+                    textFormat: Text.PlainText
                     color: ThemeTokens.subdued; font.pixelSize: 11
                 }
                 Column {

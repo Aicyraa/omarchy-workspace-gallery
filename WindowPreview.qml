@@ -51,7 +51,7 @@ Rectangle {
         anchors.centerIn: parent; spacing: 8
         visible: !capture.hasContent
         Image { anchors.horizontalCenter: parent.horizontalCenter; width: root.miniature ? 20 : 48; height: width; source: root.service.icon(root.service.entryFor(root.windowHandle)) }
-        Text { visible: !root.miniature; width: Math.max(30, root.width - 24); text: root.windowHandle ? root.windowHandle.title : "Window closed"; color: ThemeTokens.text; elide: Text.ElideRight; horizontalAlignment: Text.AlignHCenter }
+        Text { visible: !root.miniature; width: Math.max(30, root.width - 24); text: root.windowHandle ? root.windowHandle.title : "Window closed"; textFormat: Text.PlainText; color: ThemeTokens.text; elide: Text.ElideRight; horizontalAlignment: Text.AlignHCenter }
         Text { visible: !root.miniature; text: "Preview unavailable"; color: ThemeTokens.secondary; anchors.horizontalCenter: parent.horizontalCenter; font.pixelSize: 11 }
     }
     Rectangle {
@@ -59,7 +59,7 @@ Rectangle {
         anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 0 }
         height: 30; color: ThemeTokens.caption; radius: 0
         Image { id: appIcon; x: 7; anchors.verticalCenter: parent.verticalCenter; width: 19; height: 19; source: root.service.icon(root.service.entryFor(root.windowHandle)) }
-        Text { anchors { left: appIcon.right; right: parent.right; verticalCenter: parent.verticalCenter; margins: 8 } text: root.windowHandle ? root.windowHandle.title : ""; color: ThemeTokens.text; elide: Text.ElideRight; font.pixelSize: 12 }
+        Text { anchors { left: appIcon.right; right: parent.right; verticalCenter: parent.verticalCenter; margins: 8 } text: root.windowHandle ? root.windowHandle.title : ""; textFormat: Text.PlainText; color: ThemeTokens.text; elide: Text.ElideRight; font.pixelSize: 12 }
     }
     MouseArea {
         id: mouse
