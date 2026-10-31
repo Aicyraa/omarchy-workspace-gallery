@@ -1,6 +1,6 @@
 # Publishing Workspace Gallery
 
-Release checklist for [`Aicyraa/omarchy-overview`](https://github.com/Aicyraa/omarchy-overview).
+Release checklist for [`Aicyraa/omarchy-workspace-gallery`](https://github.com/Aicyraa/omarchy-workspace-gallery).
 
 | Field | Value |
 | --- | --- |

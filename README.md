@@ -50,7 +50,7 @@ No extra packages, accounts, or network services.
 ### Install
 
 ```sh
-omarchy plugin add https://github.com/Aicyraa/omarchy-overview.git --enable
+omarchy plugin add https://github.com/Aicyraa/omarchy-workspace-gallery.git --enable
 ```
 
 Optional shortcuts, added to `~/.config/hypr/bindings.lua`:
@@ -138,7 +138,7 @@ If the shell still shows old QML after an update, run `omarchy restart shell`. T
 | Old UI still shows | `omarchy restart shell` |
 | Previews are blank | Check `qs log -p /usr/share/omarchy/shell --tail 100` for capture errors. |
 
-Logs can contain window titles, so redact them before you share them. Report issues on [GitHub](https://github.com/Aicyraa/omarchy-overview/issues).
+Logs can contain window titles, so redact them before you share them. Report issues on [GitHub](https://github.com/Aicyraa/omarchy-workspace-gallery/issues).
 
 Not fully tested: multi-monitor reconnection and fractional scaling.
 
