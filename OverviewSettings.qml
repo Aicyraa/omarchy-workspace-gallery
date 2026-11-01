@@ -27,7 +27,7 @@ Rectangle {
     Keys.onEscapePressed: root.dismissed()
     Timer { id: sizeSave; interval: 180; onTriggered: root.service.saveSettings({previewScale: root.service.previewScale}) }
     Timer { id: durationSave; interval: 180; onTriggered: root.service.saveSettings({animationDuration: root.service.animationDuration}) }
-    implicitWidth: 284; implicitHeight: 326
+    implicitWidth: 284; implicitHeight: 378
     radius: 15; color: ThemeTokens.panel; border.width: 1; border.color: ThemeTokens.border
     MouseArea { anchors.fill: parent }
     Text { x: 18; y: 16; text: "Overview preferences"; font.pixelSize: 14; font.weight: Font.Medium; color: ThemeTokens.text }
@@ -83,5 +83,12 @@ Rectangle {
         anchors { right: parent.right; rightMargin: 18; top: parent.top; topMargin: 282 }
         label: "Open in ring view"; checked: root.service.defaultView === "orbit"
         onToggled: root.service.setPreference("defaultView", root.service.defaultView === "orbit" ? "classic" : "orbit")
+    }
+    Text { x: 18; y: 333; text: "Live other workspaces"; font.pixelSize: 12; color: ThemeTokens.text }
+    Text { x: 18; y: 354; text: "Keep video and animations moving. Uses more GPU"; font.pixelSize: 10; color: ThemeTokens.secondary }
+    ToggleSwitch {
+        anchors { right: parent.right; rightMargin: 18; top: parent.top; topMargin: 334 }
+        label: "Live other workspaces"; checked: root.service.liveOtherWorkspaces
+        onToggled: root.service.setPreference("liveOtherWorkspaces", !root.service.liveOtherWorkspaces)
     }
 }

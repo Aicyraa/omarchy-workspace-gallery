@@ -17,7 +17,7 @@
 - Pin a workspace with Ctrl + P so reordering leaves it in place.
 - The current workspace is marked in the previews and tabs. Every window preview shows its app icon.
 - Search also matches workspace names.
-- Preferences for the key guide (F1 toggles it) and for opening in the ring view.
+- Preferences for the key guide (F1 toggles it), for opening in the ring view, and for keeping other workspaces' previews live (video and animations keep moving; off by default).
 - A selection outline and stronger depth fade in the ring, and two-finger horizontal swipes change workspace there.
 - GitHub Actions run the model, helper and UI tests, plus static guards for rich text, remote URLs, shell use and compositor command inputs.
 

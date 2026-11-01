@@ -206,6 +206,7 @@ Item {
     property int animationDuration: 300
     property bool reducedMotion: false
     property bool showKeyGuide: true
+    property bool liveOtherWorkspaces: false
     property string defaultView: "classic"
     property var pinnedWorkspaces: []
     property string settingsError: ""
@@ -316,6 +317,10 @@ Item {
             if (!saveSettings({showKeyGuide: value})) return false
             showKeyGuide = value; return true
         }
+        if (key === "liveOtherWorkspaces" && typeof value === "boolean") {
+            if (!saveSettings({liveOtherWorkspaces: value})) return false
+            liveOtherWorkspaces = value; return true
+        }
         if (key === "defaultView" && (value === "classic" || value === "orbit")) {
             if (!saveSettings({defaultView: value})) return false
             defaultView = value; return true
@@ -356,6 +361,7 @@ Item {
                 root.animationDuration = settings.animationDuration
                 root.reducedMotion = settings.reducedMotion
                 root.showKeyGuide = settings.showKeyGuide
+                root.liveOtherWorkspaces = settings.liveOtherWorkspaces
                 root.defaultView = settings.defaultView
                 root.pinnedWorkspaces = settings.pinnedWorkspaces
             } catch (error) { console.warn("Overview preferences:", error) }

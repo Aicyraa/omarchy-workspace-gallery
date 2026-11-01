@@ -44,7 +44,8 @@ Rectangle {
         antialiasing: true
         anchors.fill: parent
         captureSource: root.service.opened && root.windowHandle ? root.windowHandle.wayland : null
-        live: root.service.opened && !root.miniature
+        // Other workspaces stay still unless the user opts in, since every live capture costs GPU time.
+        live: root.service.opened && (!root.miniature || root.service.liveOtherWorkspaces === true)
         paintCursor: false
         onHasContentChanged: {
             if (hasContent !== root.readyCounted) {

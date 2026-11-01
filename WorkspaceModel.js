@@ -32,7 +32,7 @@ function settings(entry) {
     var scale = typeof entry.previewScale === "number" && isFinite(entry.previewScale) ? entry.previewScale : 1
     var duration = typeof entry.animationDuration === "number" && isFinite(entry.animationDuration) ? entry.animationDuration : 300
     return {workspaceNames: renamed(names, 0, ""), previewScale: Math.max(0.65, Math.min(1, scale)), animationDuration: Math.max(120, Math.min(500, duration)), reducedMotion: entry.reducedMotion === true,
-        showKeyGuide: entry.showKeyGuide !== false, defaultView: entry.defaultView === "orbit" ? "orbit" : "classic", pinnedWorkspaces: cleanPinned(entry.pinnedWorkspaces)}
+        showKeyGuide: entry.showKeyGuide !== false, liveOtherWorkspaces: entry.liveOtherWorkspaces === true, defaultView: entry.defaultView === "orbit" ? "orbit" : "classic", pinnedWorkspaces: cleanPinned(entry.pinnedWorkspaces)}
 }
 
 function cleanPinned(value) {
