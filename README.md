@@ -38,6 +38,7 @@ https://github.com/user-attachments/assets/26bdeebb-0f9c-48dc-b6ae-9da0cce2a47e
 | New workspace | Open the next free workspace from the `+` tab. |
 | Names and motion | Name workspaces. Adjust preview size, duration, and reduced motion. |
 | Key guide | A shortcut legend you can hide with <kbd>F1</kbd>. |
+| Live or still previews | Other workspaces stay still by default. Turn on live previews to keep video moving, and high quality for smoother text. |
 
 ---
 
@@ -119,7 +120,7 @@ Settings are saved in this plugin's entry in `~/.config/omarchy/shell.json`.
 - Window previews stay in memory and are never saved to disk.
 - Nothing is sent to a remote service. Window titles and workspace names are drawn as plain text, so markup in a title is never interpreted or fetched.
 - Closing a window sends a standard close request and moves or renumbers only what you ask for.
-- Recovery journals are kept in `~/.local/state/omarchy/workspace-reorder/`. They hold workspace numbering, names and window counts, never window titles, and the last 20 are kept.
+- Recovery journals are kept in `~/.local/state/omarchy/workspace-reorder/`. They hold workspace numbering, names and window counts, never window titles, and the last 20 are kept. Journals written before 1.3.0 can contain window titles, so you can delete the old `transaction-*.json` files.
 
 ---
 
@@ -163,7 +164,7 @@ Not fully tested: multi-monitor reconnection and fractional scaling.
 
 ```sh
 omarchy plugin validate .
-node --test tests/model.test.cjs
+node --test tests/
 python3 tests/reorder_test.py
 QT_QPA_PLATFORM=offscreen QT_QPA_PLATFORMTHEME= QT_QUICK_CONTROLS_STYLE=Basic \
   /usr/lib/qt6/bin/qmltestrunner -input tests/ui -import tests/ui/imports -o -,txt
