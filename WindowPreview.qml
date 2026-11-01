@@ -47,6 +47,12 @@ Rectangle {
         // Other workspaces stay still unless the user opts in, since every live capture costs GPU time.
         live: root.service.opened && (!root.miniature || root.service.liveOtherWorkspaces === true)
         paintCursor: false
+        // High quality renders the capture near its real size into a mipmapped texture, so
+        // shrinking it for the overview is filtered properly instead of skipping pixels.
+        layer.enabled: root.service.highQuality === true && hasContent
+        layer.smooth: true
+        layer.mipmap: true
+        layer.textureSize: Qt.size(Math.max(1, Math.min(1920, sourceSize.width)), Math.max(1, Math.min(1080, sourceSize.height)))
         onHasContentChanged: {
             if (hasContent !== root.readyCounted) {
                 root.service.readyCaptures += hasContent ? 1 : -1

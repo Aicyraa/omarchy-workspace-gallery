@@ -27,7 +27,7 @@ Rectangle {
     Keys.onEscapePressed: root.dismissed()
     Timer { id: sizeSave; interval: 180; onTriggered: root.service.saveSettings({previewScale: root.service.previewScale}) }
     Timer { id: durationSave; interval: 180; onTriggered: root.service.saveSettings({animationDuration: root.service.animationDuration}) }
-    implicitWidth: 284; implicitHeight: 378
+    implicitWidth: 284; implicitHeight: 430
     radius: 15; color: ThemeTokens.panel; border.width: 1; border.color: ThemeTokens.border
     MouseArea { anchors.fill: parent }
     Text { x: 18; y: 16; text: "Overview preferences"; font.pixelSize: 14; font.weight: Font.Medium; color: ThemeTokens.text }
@@ -90,5 +90,12 @@ Rectangle {
         anchors { right: parent.right; rightMargin: 18; top: parent.top; topMargin: 334 }
         label: "Live other workspaces"; checked: root.service.liveOtherWorkspaces
         onToggled: root.service.setPreference("liveOtherWorkspaces", !root.service.liveOtherWorkspaces)
+    }
+    Text { x: 18; y: 385; text: "High-quality previews"; font.pixelSize: 12; color: ThemeTokens.text }
+    Text { x: 18; y: 406; text: "Smoother, less shimmery text. Uses more memory"; font.pixelSize: 10; color: ThemeTokens.secondary }
+    ToggleSwitch {
+        anchors { right: parent.right; rightMargin: 18; top: parent.top; topMargin: 386 }
+        label: "High-quality previews"; checked: root.service.highQuality
+        onToggled: root.service.setPreference("previewQuality", root.service.highQuality ? "standard" : "high")
     }
 }

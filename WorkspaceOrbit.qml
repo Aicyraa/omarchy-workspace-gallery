@@ -198,7 +198,9 @@ Item {
                     layer.smooth: true
                     layer.mipmap: true
                     layer.samples: 4
-                    layer.textureSize: Qt.size(Math.min(1280, Math.ceil(width * 2)), Math.min(720, Math.ceil(height * 2)))
+                    layer.textureSize: root.service.highQuality === true
+                        ? Qt.size(Math.min(1920, Math.ceil(width * 3)), Math.min(1080, Math.ceil(height * 3)))
+                        : Qt.size(Math.min(1280, Math.ceil(width * 2)), Math.min(720, Math.ceil(height * 2)))
                     transform: Matrix4x4 { matrix: stage.faceMatrix(unit.frame) }
                     MouseArea {
                         anchors.fill: parent

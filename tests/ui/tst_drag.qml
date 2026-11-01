@@ -17,6 +17,7 @@ Item {
         property var pinnedWorkspaces: []
         property int currentWorkspace: 0
         property bool showKeyGuide: true
+        property bool highQuality: false
         property int selectedWorkspace: 1
         property string windowDragAddress: ""
         property string windowDragTitle: ""

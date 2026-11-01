@@ -105,6 +105,7 @@ Drag a window preview onto another workspace to move it. Closing a window sends 
 - **Transition:** 120–500 ms, or reduced motion.
 - **Key guide:** show or hide the shortcut legend.
 - **Live other workspaces:** keep video and animations moving in the other workspaces' previews. Off by default because it uses more GPU.
+- **High-quality previews:** filters shrunken window captures properly and gives ring cards a larger texture. Text shimmers less, at the cost of more video memory. Off by default.
 - **Open in ring view:** start in the 3D ring instead of the flat overview.
 - **Pinned workspaces:** <kbd>Ctrl</kbd> + <kbd>P</kbd> keeps a workspace's position when others are reordered.
 

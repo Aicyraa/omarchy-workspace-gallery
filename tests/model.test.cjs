@@ -25,7 +25,7 @@ assert.equal(model.matches('résumé', 'RÉSUMÉ', '', ''), true);
 assert.equal(model.matches('terminal', '', 'Terminal', 'org.omarchy.agent'), true);
 assert.equal(model.matches('missing', null, undefined, ''), false);
 
-const defaults = {previewScale:1,animationDuration:300,reducedMotion:false,showKeyGuide:true,liveOtherWorkspaces:false,defaultView:'classic',pinnedWorkspaces:[]};
+const defaults = {previewScale:1,animationDuration:300,reducedMotion:false,showKeyGuide:true,liveOtherWorkspaces:false,previewQuality:'standard',defaultView:'classic',pinnedWorkspaces:[]};
 assert.deepEqual(plain(model.settings({})), {workspaceNames:{},...defaults});
 assert.deepEqual(plain(model.settings({previewScale:8,animationDuration:1,reducedMotion:true})), {workspaceNames:{},...defaults,animationDuration:120,reducedMotion:true});
 assert.equal(model.settings({previewScale:0.1}).previewScale, 0.65);
@@ -70,6 +70,8 @@ assert.equal(model.settings({showKeyGuide:false}).showKeyGuide, false);
 assert.equal(model.settings({showKeyGuide:'no'}).showKeyGuide, true);
 assert.equal(model.settings({liveOtherWorkspaces:true}).liveOtherWorkspaces, true);
 assert.equal(model.settings({liveOtherWorkspaces:'yes'}).liveOtherWorkspaces, false);
+assert.equal(model.settings({previewQuality:'high'}).previewQuality, 'high');
+assert.equal(model.settings({previewQuality:'ultra'}).previewQuality, 'standard');
 assert.equal(model.settings({defaultView:'orbit'}).defaultView, 'orbit');
 assert.equal(model.settings({defaultView:'<img src=x>'}).defaultView, 'classic');
 assert.deepEqual(plain(model.settings({pinnedWorkspaces:[3,1,1,'2',-4,2.5,0,100001,5]}).pinnedWorkspaces), [1,3,5]);
