@@ -26,6 +26,16 @@ https://github.com/user-attachments/assets/26bdeebb-0f9c-48dc-b6ae-9da0cce2a47e
 
 ---
 
+> ### Updated to 1.3.0
+>
+> **New:** close windows from their preview, pin workspaces, jump with <kbd>Alt</kbd> + <kbd>1</kbd>–<kbd>9</kbd>, open a new workspace from the `+` tab, move windows with <kbd>Shift</kbd> + arrows, a "Current" marker, search by workspace name, larger ring cards, and optional live and high-quality previews.
+> **Security:** window titles are always drawn as plain text, so markup in a title can no longer trigger a remote request. Recovery journals no longer store window titles.
+> **Fixed:** Ctrl + scroll zoom and scrolling on touchpads and mice.
+>
+> Already installed? Run `omarchy plugin update io.github.aicyraa.workspace-gallery`, then `omarchy restart shell`. Your names and preferences are kept. See the [changelog](CHANGELOG.md) for details.
+
+---
+
 ### Features
 
 | Feature | Description |
