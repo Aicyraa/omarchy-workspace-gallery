@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 import Quickshell.Wayland
+import "WorkspaceModel.js" as Model
 
 Item {
     id: root
@@ -30,7 +31,10 @@ Item {
         target: "io.github.aicyraa.workspace-gallery.perspective"
         function toggle(): bool { return root.togglePerspective() }
         function select(id: int): void { if (root.opened && root.service && root.service.allWorkspaceIds.indexOf(id) >= 0) root.service.selectWorkspace(id) }
-        function reorder(order: string): bool { return root.opened && root.service ? root.service.reorderWorkspaces(root.service.allWorkspaceIds, JSON.parse(order).order) : false }
+        function reorder(order: string): bool {
+            const requested = Model.parseOrderPayload(order)
+            return root.opened && root.service && requested ? root.service.reorderWorkspaces(root.service.allWorkspaceIds, requested) : false
+        }
         function undo(): bool { return root.service ? root.service.undoLastAction() : false }
         function moveWindow(address: string, workspace: int): bool { return root.opened && root.service ? root.service.moveWindowToWorkspace(address, workspace) : false }
         function activate(): void { if (root.opened && root.service) root.service.activate() }
@@ -49,9 +53,9 @@ Item {
     function open(payload) {
         var requested = {}
         try { requested = JSON.parse(payload || "{}") } catch (error) { }
-        viewMode = requested.view === "orbit" ? "orbit" : "classic"
         if (!service && shell) service = shell.serviceFor("io.github.aicyraa.workspace-gallery")
         if (!service) { console.warn("Overview service unavailable"); return }
+        viewMode = requested.view === "orbit" || requested.view === "classic" ? requested.view : service.defaultView
         service.setSearch(""); searchVisible = false; settingsVisible = false
         service.selectWorkspace(Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : 1)
         service.opened = true; opened = true
@@ -237,16 +241,27 @@ Item {
                     textFormat: Text.PlainText
                     color: ThemeTokens.subdued; font.pixelSize: 11
                 }
+                Row {
+                    visible: !root.service.showKeyGuide && !(root.service.settingsError || root.service.windowMoveFeedback)
+                    anchors { bottom: parent.bottom; bottomMargin: 17; left: parent.left; leftMargin: 30 }
+                    spacing: 12
+                    Rectangle {
+                        height: 17; width: collapsedKey.implicitWidth + 12; radius: 5
+                        color: ThemeTokens.surface; border.width: 1; border.color: ThemeTokens.border
+                        Text { id: collapsedKey; anchors.centerIn: parent; text: "F1"; color: ThemeTokens.secondary; font.pixelSize: 10 }
+                    }
+                    Text { height: 17; verticalAlignment: Text.AlignVCenter; text: "Key guide"; color: ThemeTokens.subdued; font.pixelSize: 10 }
+                }
                 Column {
                     id: hintRow
-                    visible: !(root.service.settingsError || root.service.windowMoveFeedback)
+                    visible: root.service.showKeyGuide && !(root.service.settingsError || root.service.windowMoveFeedback)
                     anchors { bottom: parent.bottom; bottomMargin: 17; left: parent.left; leftMargin: 30 }
                     spacing: 6
                     function hintItems() {
                         if (nameEditor.editing) return [{keys: ["Enter"], label: "Save name"}, {keys: ["Esc"], label: "Cancel"}, {keys: [], label: "Empty name resets"}]
                         if (root.searchVisible) return [{keys: [], label: root.service.matchCount + " matches"}, {keys: ["Tab"], label: "Select"}, {keys: ["Enter"], label: "Open"}, {keys: ["Esc"], label: "Clear"}]
-                        if (root.viewMode === "orbit") return [{keys: ["Drag"], label: "Orbit"}, {keys: ["Ctrl + Scroll"], label: "Zoom"}, {keys: ["←", "→"], label: "Workspaces"}, {keys: ["Enter"], label: "Open"}]
-                        return [{keys: ["←", "→"], label: "Workspaces"}, {keys: ["Tab"], label: "Windows"}, {keys: ["Enter"], label: "Open"}, {keys: ["F2"], label: "Rename"}, {keys: ["Type"], label: "Search"}]
+                        if (root.viewMode === "orbit") return [{keys: ["Drag"], label: "Orbit"}, {keys: ["Ctrl + Scroll"], label: "Zoom"}, {keys: ["←", "→"], label: "Workspaces"}, {keys: ["Enter"], label: "Open"}, {keys: ["F1"], label: "Hide guide"}]
+                        return [{keys: ["←", "→"], label: "Workspaces"}, {keys: ["Tab"], label: "Windows"}, {keys: ["Enter"], label: "Open"}, {keys: ["F2"], label: "Rename"}, {keys: ["Type"], label: "Search"}, {keys: ["F1"], label: "Hide guide"}]
                     }
                     Repeater {
                         model: hintRow.hintItems()
@@ -313,6 +328,25 @@ Item {
                 function onWindowDragEnded(canceled) { if (canceled) windowDragGhost.Drag.cancel(); else windowDragGhost.Drag.drop() }
             }
         }
+        // Shortcuts shared by both views. Returns true when the key was used.
+        function extraKey(event) {
+            const alt = event.modifiers & Qt.AltModifier, ctrl = event.modifiers & Qt.ControlModifier, shift = event.modifiers & Qt.ShiftModifier
+            const service = root.service
+            if (alt && !ctrl && event.key >= Qt.Key_1 && event.key <= Qt.Key_9) { service.jumpToIndex(event.key - Qt.Key_1); return true }
+            if (ctrl && !alt && event.key === Qt.Key_N) { service.openNewWorkspace(); return true }
+            if (ctrl && !alt && event.key === Qt.Key_P) { service.togglePinnedWorkspace(service.selectedWorkspace); return true }
+            if (alt || ctrl) return false
+            if (event.key === Qt.Key_Home) { service.jumpToIndex(0); return true }
+            if (event.key === Qt.Key_End) { service.jumpToIndex(service.workspaceIds.length - 1); return true }
+            if (event.key === Qt.Key_F1) { service.setPreference("showKeyGuide", !service.showKeyGuide); return true }
+            if (shift && (event.key === Qt.Key_Left || event.key === Qt.Key_Right)) { service.moveSelectedWindow(event.key === Qt.Key_Left ? -1 : 1); return true }
+            if (event.key === Qt.Key_Delete) {
+                const list = service.selectedWindows
+                if (list.length) service.closeWindow(list[Math.min(service.selectedWindow, list.length - 1)])
+                return true
+            }
+            return false
+        }
         Item {
             id: keys; focus: true
             Keys.onPressed: event => {
@@ -324,6 +358,7 @@ Item {
                 if (event.key === Qt.Key_Z && event.modifiers & Qt.ControlModifier && !root.settingsVisible && !root.searchVisible) {
                     root.service.undoLastAction(); event.accepted = true; return
                 }
+                if (!root.settingsVisible && !root.searchVisible && panel.extraKey(event)) { event.accepted = true; return }
                 if (root.viewMode === "orbit" && !root.settingsVisible && !root.searchVisible) {
                     if (event.key === Qt.Key_Escape) root.service.dismiss()
                     else if (event.key === Qt.Key_F2) root.beginRename()

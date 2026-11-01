@@ -25,8 +25,9 @@ assert.equal(model.matches('résumé', 'RÉSUMÉ', '', ''), true);
 assert.equal(model.matches('terminal', '', 'Terminal', 'org.omarchy.agent'), true);
 assert.equal(model.matches('missing', null, undefined, ''), false);
 
-assert.deepEqual(plain(model.settings({})), {workspaceNames:{},previewScale:1,animationDuration:300,reducedMotion:false});
-assert.deepEqual(plain(model.settings({previewScale:8,animationDuration:1,reducedMotion:true})), {workspaceNames:{},previewScale:1,animationDuration:120,reducedMotion:true});
+const defaults = {previewScale:1,animationDuration:300,reducedMotion:false,showKeyGuide:true,defaultView:'classic',pinnedWorkspaces:[]};
+assert.deepEqual(plain(model.settings({})), {workspaceNames:{},...defaults});
+assert.deepEqual(plain(model.settings({previewScale:8,animationDuration:1,reducedMotion:true})), {workspaceNames:{},...defaults,animationDuration:120,reducedMotion:true});
 assert.equal(model.settings({previewScale:0.1}).previewScale, 0.65);
 assert.equal(model.settings({animationDuration:900}).animationDuration, 500);
 assert.equal(model.settings({previewScale:'bad',animationDuration:NaN,reducedMotion:'true'}).reducedMotion, false);
@@ -59,3 +60,50 @@ assert.equal(model.canUndoWindowMove(moveUndo,{address:'abcd',workspace:{id:2},l
 assert.equal(model.canUndoWindowMove(moveUndo,null),false);
 assert.equal(model.canUndoWindowMove(moveUndo,{address:'abcd',workspace:{id:3},lastIpcObject:{pid:42}}),false);
 assert.equal(model.canUndoWindowMove(moveUndo,{address:'abcd',workspace:{id:2},lastIpcObject:{pid:99}}),false);
+
+// Search also matches the workspace name.
+assert.equal(model.matches('design', 'Untitled', 'Editor', 'editor', 'Design'), true);
+assert.equal(model.matches('design', 'Untitled', 'Editor', 'editor', 'Mail'), false);
+
+// New preferences are validated.
+assert.equal(model.settings({showKeyGuide:false}).showKeyGuide, false);
+assert.equal(model.settings({showKeyGuide:'no'}).showKeyGuide, true);
+assert.equal(model.settings({defaultView:'orbit'}).defaultView, 'orbit');
+assert.equal(model.settings({defaultView:'<img src=x>'}).defaultView, 'classic');
+assert.deepEqual(plain(model.settings({pinnedWorkspaces:[3,1,1,'2',-4,2.5,0,100001,5]}).pinnedWorkspaces), [1,3,5]);
+assert.deepEqual(plain(model.settings({pinnedWorkspaces:'1'}).pinnedWorkspaces), []);
+assert.deepEqual(plain(model.cleanPinned(Array.from({length: 300}, (_, i) => i + 1))).length, 100);
+assert.deepEqual(plain(model.togglePinned([1], 3)), [1,3]);
+assert.deepEqual(plain(model.togglePinned([1,3], 3)), [1]);
+assert.deepEqual(plain(model.togglePinned([], 'x')), []);
+
+// Pinned workspaces keep their position while the others reorder around them.
+assert.deepEqual(plain(model.insertWorkspacePinned([1,2,3,4,5], 1, 4, [3])), [2,4,3,5,1]);
+assert.deepEqual(plain(model.insertWorkspacePinned([1,2,3,4,5], 5, 0, [1])), [1,5,2,3,4]);
+assert.deepEqual(plain(model.insertWorkspacePinned([1,2,3], 3, 0, [3])), [1,2,3]);
+assert.deepEqual(plain(model.insertWorkspacePinned([1,2,3], 9, 0, [])), [1,2,3]);
+assert.deepEqual(plain(model.insertWorkspacePinned([1,2,3,4], 2, 3, [])), plain(model.insertWorkspace([1,2,3,4], 2, 3)));
+{
+  const slots = [1,2,3,4,5], pinned = [2, 4];
+  for (const id of slots) for (let index = 0; index < slots.length; index++) {
+    const order = plain(model.insertWorkspacePinned(slots, id, index, pinned));
+    assert.deepEqual([...order].sort(), slots, 'always a permutation');
+    for (const p of pinned) assert.equal(order.indexOf(p), slots.indexOf(p), 'pinned stays put');
+  }
+}
+
+// Icon sources must stay local.
+assert.equal(model.safeImageSource('image://icon/firefox'), 'image://icon/firefox');
+assert.equal(model.safeImageSource('/usr/share/icons/a.png'), '/usr/share/icons/a.png');
+assert.equal(model.safeImageSource('file:///usr/share/icons/a.png'), 'file:///usr/share/icons/a.png');
+for (const bad of ['https://example.com/a.png', 'http://x/y', 'ftp://x', '//attacker/share/a.png', 'qrc:/x', 'data:image/png;base64,AA', '', null, undefined])
+  assert.equal(model.safeImageSource(bad), '');
+
+// Fresh workspace numbers and IPC order payloads.
+assert.equal(model.nextWorkspaceId([1,2,5]), 6);
+assert.equal(model.nextWorkspaceId([]), 1);
+assert.equal(model.nextWorkspaceId([100000]), 0);
+assert.deepEqual(plain(model.parseOrderPayload('{"order":[2,1]}')), [2,1]);
+for (const bad of ['', 'nope', '{}', '{"order":"12"}', '{"order":[]}', '{"order":[1,"2"]}', '{"order":[1.5]}', '{"order":' + JSON.stringify(Array.from({length: 101}, (_, i) => i + 1)) + '}', 'null'])
+  assert.equal(model.parseOrderPayload(bad), null);
+console.log('Pinning, icon source, new workspace, and IPC payload validation passed.');

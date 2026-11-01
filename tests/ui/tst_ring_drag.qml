@@ -11,6 +11,9 @@ Item {
         id: service
         property bool opened: true
         property var workspaceIds: [1, 2, 3, 4, 5]
+        property var pinnedWorkspaces: []
+        property int currentWorkspace: 0
+        property bool showKeyGuide: true
         property int selectedWorkspace: 1
         property int selectedWindow: 0
         property int monitorWidth: 1366

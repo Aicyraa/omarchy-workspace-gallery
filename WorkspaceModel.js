@@ -20,9 +20,9 @@ function renamed(names, id, value) {
     return next
 }
 
-function matches(query, title, appName, appClass) {
+function matches(query, title, appName, appClass, workspaceLabel) {
     var tokens = String(query || "").toLocaleLowerCase().trim().split(/\s+/).filter(function(t) { return t.length > 0 })
-    var text = [title || "", appName || "", appClass || ""].join(" ").toLocaleLowerCase()
+    var text = [title || "", appName || "", appClass || "", workspaceLabel || ""].join(" ").toLocaleLowerCase()
     return tokens.every(function(token) { return text.indexOf(token) !== -1 })
 }
 
@@ -31,7 +31,58 @@ function settings(entry) {
     var names = entry.workspaceNames && typeof entry.workspaceNames === "object" && !Array.isArray(entry.workspaceNames) ? entry.workspaceNames : {}
     var scale = typeof entry.previewScale === "number" && isFinite(entry.previewScale) ? entry.previewScale : 1
     var duration = typeof entry.animationDuration === "number" && isFinite(entry.animationDuration) ? entry.animationDuration : 300
-    return {workspaceNames: renamed(names, 0, ""), previewScale: Math.max(0.65, Math.min(1, scale)), animationDuration: Math.max(120, Math.min(500, duration)), reducedMotion: entry.reducedMotion === true}
+    return {workspaceNames: renamed(names, 0, ""), previewScale: Math.max(0.65, Math.min(1, scale)), animationDuration: Math.max(120, Math.min(500, duration)), reducedMotion: entry.reducedMotion === true,
+        showKeyGuide: entry.showKeyGuide !== false, defaultView: entry.defaultView === "orbit" ? "orbit" : "classic", pinnedWorkspaces: cleanPinned(entry.pinnedWorkspaces)}
+}
+
+function cleanPinned(value) {
+    var out = []
+    if (!Array.isArray(value)) return out
+    value.forEach(function(id) {
+        if (Number.isInteger(id) && id >= 1 && id <= 100000 && out.indexOf(id) < 0 && out.length < 100) out.push(id)
+    })
+    return out.sort(function(a, b) { return a - b })
+}
+
+function togglePinned(pinned, id) {
+    var list = cleanPinned(pinned)
+    var at = list.indexOf(id)
+    if (at >= 0) list.splice(at, 1)
+    else if (Number.isInteger(id)) list = cleanPinned(list.concat([id]))
+    return list
+}
+
+// Like insertWorkspace, but pinned workspaces keep their position in the list.
+function insertWorkspacePinned(ids, id, index, pinned) {
+    pinned = pinned || []
+    if (pinned.indexOf(id) >= 0 || ids.indexOf(id) < 0) return ids.slice()
+    var rest = ids.filter(function(other) { return other !== id })
+    var free = rest.filter(function(other) { return pinned.indexOf(other) < 0 })
+    var at = rest.slice(0, Math.max(0, Math.min(rest.length, index))).filter(function(other) { return pinned.indexOf(other) < 0 }).length
+    free.splice(at, 0, id)
+    var next = ids.map(function(other) { return pinned.indexOf(other) >= 0 ? other : null })
+    var cursor = 0
+    return next.map(function(other) { return other === null ? free[cursor++] : other })
+}
+
+// Quickshell icon paths are local; refuse anything that could reach the network.
+function safeImageSource(value) {
+    var source = String(value || "")
+    return /^(image:\/\/icon\/|file:\/\/\/|\/(?!\/))/.test(source) ? source : ""
+}
+
+function nextWorkspaceId(ids) {
+    var highest = ids.reduce(function(a, b) { return Math.max(a, b) }, 0)
+    return highest >= 100000 ? 0 : highest + 1
+}
+
+// Parses the order sent over IPC; anything but a short list of integers is rejected.
+function parseOrderPayload(text) {
+    try {
+        var value = JSON.parse(text)
+        if (value && Array.isArray(value.order) && value.order.length > 0 && value.order.length <= 100 && value.order.every(Number.isInteger)) return value.order
+    } catch (error) { }
+    return null
 }
 
 function windowAddress(value) {

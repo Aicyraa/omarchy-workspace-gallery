@@ -74,7 +74,8 @@ Item {
                 event.accepted = true
                 return
             }
-            root.wheelDelta += event.angleDelta.y || event.angleDelta.x
+            // Two-finger swipes arrive on either axis; follow whichever dominates.
+            root.wheelDelta += Math.abs(event.angleDelta.x) > Math.abs(event.angleDelta.y) ? event.angleDelta.x : event.angleDelta.y
             if (Math.abs(root.wheelDelta) >= 90) {
                 root.service.moveWorkspace(root.wheelDelta > 0 ? -1 : 1)
                 root.wheelDelta = 0
@@ -161,7 +162,7 @@ Item {
                 readonly property bool leftFacing: stage.facesCamera(frame, {x: -frame.t.x, y: 0, z: -frame.t.z}, 0, stage.cardHeight / 2)
                 readonly property bool rightFacing: stage.facesCamera(frame, {x: frame.t.x, y: 0, z: frame.t.z}, stage.cardWidth, stage.cardHeight / 2)
                 z: depth * 1000 + index * 0.01
-                opacity: 0.65 + depth * 0.35
+                opacity: 0.45 + depth * 0.55
                 // The slab's sides sit behind the preview, so the card gains real thickness.
                 Shape {
                     anchors.fill: parent
@@ -203,6 +204,12 @@ Item {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: root.service.enterWorkspace(unit.modelData, "")
+                    }
+                    // The selected slab gets an accent outline so it stands out in the ring.
+                    Rectangle {
+                        anchors.fill: parent; z: 1500
+                        visible: unit.selected
+                        color: "transparent"; border.width: 2; border.color: ThemeTokens.alpha(ThemeTokens.accent, 0.9)
                     }
                     // Window previews remain independently clickable above the workspace.
                     WorkspaceScene {

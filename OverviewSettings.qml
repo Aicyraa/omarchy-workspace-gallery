@@ -6,11 +6,28 @@ Rectangle {
     required property var service
     signal dismissed()
     function focusFirst() { sizeSlider.forceActiveFocus() }
+    component ToggleSwitch: Rectangle {
+        id: toggle
+        property bool checked: false
+        property string label: ""
+        signal toggled()
+        activeFocusOnTab: true
+        Keys.onReturnPressed: toggled()
+        Keys.onSpacePressed: toggled()
+        border.width: activeFocus ? 1 : 0; border.color: ThemeTokens.accent
+        width: 32; height: 18; radius: 9; color: checked ? ThemeTokens.accent : ThemeTokens.track
+        Rectangle { x: toggle.checked ? 17 : 3; y: 3; width: 12; height: 12; radius: 6; color: toggle.checked ? ThemeTokens.onAccent : ThemeTokens.secondary }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: { toggle.forceActiveFocus(); toggle.toggled() }
+            Accessible.role: Accessible.CheckBox; Accessible.name: toggle.label; Accessible.checked: toggle.checked
+        }
+    }
     function toggleMotion() { service.reducedMotion = !service.reducedMotion; service.saveSettings({reducedMotion: service.reducedMotion}) }
     Keys.onEscapePressed: root.dismissed()
     Timer { id: sizeSave; interval: 180; onTriggered: root.service.saveSettings({previewScale: root.service.previewScale}) }
     Timer { id: durationSave; interval: 180; onTriggered: root.service.saveSettings({animationDuration: root.service.animationDuration}) }
-    implicitWidth: 284; implicitHeight: 232
+    implicitWidth: 284; implicitHeight: 326
     radius: 15; color: ThemeTokens.panel; border.width: 1; border.color: ThemeTokens.border
     MouseArea { anchors.fill: parent }
     Text { x: 18; y: 16; text: "Overview preferences"; font.pixelSize: 14; font.weight: Font.Medium; color: ThemeTokens.text }
@@ -52,5 +69,19 @@ Rectangle {
             onClicked: { parent.forceActiveFocus(); root.toggleMotion() }
             Accessible.role: Accessible.CheckBox; Accessible.name: "Reduced motion"; Accessible.checked: root.service.reducedMotion
         }
+    }
+    Text { x: 18; y: 229; text: "Key guide"; font.pixelSize: 12; color: ThemeTokens.text }
+    Text { x: 18; y: 250; text: "Show the shortcut legend (F1 toggles it)"; font.pixelSize: 10; color: ThemeTokens.secondary }
+    ToggleSwitch {
+        anchors { right: parent.right; rightMargin: 18; top: parent.top; topMargin: 230 }
+        label: "Key guide"; checked: root.service.showKeyGuide
+        onToggled: root.service.setPreference("showKeyGuide", !root.service.showKeyGuide)
+    }
+    Text { x: 18; y: 281; text: "Open in ring view"; font.pixelSize: 12; color: ThemeTokens.text }
+    Text { x: 18; y: 302; text: "Start in the 3D ring instead of the flat view"; font.pixelSize: 10; color: ThemeTokens.secondary }
+    ToggleSwitch {
+        anchors { right: parent.right; rightMargin: 18; top: parent.top; topMargin: 282 }
+        label: "Open in ring view"; checked: root.service.defaultView === "orbit"
+        onToggled: root.service.setPreference("defaultView", root.service.defaultView === "orbit" ? "classic" : "orbit")
     }
 }
