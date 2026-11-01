@@ -174,7 +174,7 @@ Not fully tested: multi-monitor reconnection and fractional scaling.
 
 ```sh
 omarchy plugin validate .
-node --test tests/
+node --test "tests/*.test.cjs"
 python3 tests/reorder_test.py
 QT_QPA_PLATFORM=offscreen QT_QPA_PLATFORMTHEME= QT_QUICK_CONTROLS_STYLE=Basic \
   /usr/lib/qt6/bin/qmltestrunner -input tests/ui -import tests/ui/imports -o -,txt
