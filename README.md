@@ -117,7 +117,7 @@ Settings are saved in this plugin's entry in `~/.config/omarchy/shell.json`.
 - Window previews stay in memory and are never saved to disk.
 - Nothing is sent to a remote service. Window titles and workspace names are drawn as plain text, so markup in a title is never interpreted or fetched.
 - Closing a window sends a standard close request and moves or renumbers only what you ask for.
-- Recovery journals are kept in `~/.local/state/omarchy/workspace-reorder/`. They hold metadata only, and the last 20 are kept.
+- Recovery journals are kept in `~/.local/state/omarchy/workspace-reorder/`. They hold workspace numbering, names and window counts, never window titles, and the last 20 are kept.
 
 ---
 

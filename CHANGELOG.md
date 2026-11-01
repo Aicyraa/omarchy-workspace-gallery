@@ -6,7 +6,7 @@
 - Window titles, workspace names and status messages are always drawn as plain text, so markup in a title can no longer make the shell fetch a remote image.
 - App icons are only loaded from local sources.
 - IPC `reorder` rejects anything but a short list of integers instead of throwing.
-- The reorder helper keeps the permissions of `shell.json` and keeps its state folder private.
+- The reorder helper keeps the permissions of `shell.json`, keeps its state folder private, and no longer writes window titles into its recovery journals.
 - A stuck workspace reorder now times out after 30 seconds, so the overview, which holds exclusive keyboard focus, can always be closed.
 - `rollback.py` now removes the shortcut block that `deploy.py` writes, backs up both files first and writes atomically.
 
@@ -19,7 +19,7 @@
 - Search also matches workspace names.
 - Preferences for the key guide (F1 toggles it) and for opening in the ring view.
 - A selection outline and stronger depth fade in the ring, and two-finger horizontal swipes change workspace there.
-- GitHub Actions run the model, helper and UI tests.
+- GitHub Actions run the model, helper and UI tests, plus static guards for rich text, remote URLs, shell use and compositor command inputs.
 
 ### Fixed
 - Ctrl + scroll zoom and plain scrolling now work on touchpads and mice.

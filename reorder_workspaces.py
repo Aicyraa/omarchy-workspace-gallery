@@ -22,6 +22,9 @@ def permutation(slots, order):
 def query():
     return json.loads(subprocess.check_output(['hyprctl', 'workspaces', '-j'], timeout=5))
 
+def journal_snapshot(snapshot):
+    return [{key: workspace.get(key) for key in ('id', 'name', 'monitor', 'monitorID', 'windows')} for workspace in snapshot]
+
 def change_id(source, target):
     command = 'hl.dsp.workspace.change_id({workspace="%d",id=%d})' % (source, target)
     result = subprocess.run(['hyprctl', 'dispatch', command], capture_output=True, text=True, timeout=5)
@@ -57,12 +60,14 @@ def main():
     with (state / '.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         snapshot = query()
+        # Recovery needs only numbering, never window titles or addresses.
+        recorded = journal_snapshot(snapshot)
         stamp = str(time.time_ns())
         record = state / ('transaction-' + stamp + '.json')
         def journal(moves):
             fd, name = tempfile.mkstemp(dir=state)
             with os.fdopen(fd, 'w') as output:
-                json.dump({'mapping': mapping, 'workspaces': snapshot, 'completedMoves': moves}, output)
+                json.dump({'mapping': mapping, 'workspaces': recorded, 'completedMoves': moves}, output)
             os.replace(name, record)
         journal([])
         moves = transact(mapping, snapshot, change_id, journal)
