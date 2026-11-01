@@ -12,7 +12,7 @@ Item {
     property real dragX: 0
     readonly property var order: dragging ? previewOrder : service.workspaceIds
     readonly property real pitch: 54
-    implicitWidth: Math.max(0, service.workspaceIds.length * pitch - 10)
+    implicitWidth: Math.max(0, (service.workspaceIds.length + 1) * pitch - 10)
     implicitHeight: 38
     function cancel() { dragging = false; draggedId = -1; previewOrder = []; originalOrder = [] }
     Repeater {
@@ -22,6 +22,8 @@ Item {
             required property int modelData
             readonly property bool selected: root.service.selectedWorkspace === modelData
             readonly property bool occupied: root.service.windowsFor(modelData).length > 0
+            readonly property bool current: root.service.currentWorkspace === modelData
+            readonly property bool pinned: root.service.pinnedWorkspaces.indexOf(modelData) >= 0
             readonly property bool moving: root.dragging && root.draggedId === modelData
             width: 44; height: 38
             x: moving ? root.dragX : Math.max(0, root.order.indexOf(modelData)) * root.pitch
@@ -32,7 +34,7 @@ Item {
             Behavior on y { NumberAnimation { duration: root.service.motionDuration(120) } }
             Behavior on scale { NumberAnimation { duration: root.service.motionDuration(120) } }
             Accessible.role: Accessible.PageTab
-            Accessible.name: root.service.workspaceName(modelData) + "; drag to reorder"
+            Accessible.name: root.service.workspaceName(modelData) + (pinned ? "; pinned" : "; drag to reorder") + (current ? "; current workspace" : "")
             Accessible.selected: selected
             Accessible.onPressAction: root.service.selectWorkspace(modelData)
             Rectangle {
@@ -64,9 +66,15 @@ Item {
                 anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 2 }
                 text: tab.modelData
                 textFormat: Text.PlainText
-                color: tab.selected || tab.moving ? ThemeTokens.text : ThemeTokens.secondary
-                opacity: tab.selected || tab.moving ? 0.9 : 0.45
+                color: tab.current ? ThemeTokens.accent : tab.selected || tab.moving ? ThemeTokens.text : ThemeTokens.secondary
+                opacity: tab.selected || tab.moving || tab.current ? 0.9 : 0.45
                 font.pixelSize: 10
+            }
+            // A small diamond marks a pinned workspace, which reordering leaves in place.
+            Rectangle {
+                visible: tab.pinned
+                anchors { right: parent.right; rightMargin: 4; bottom: parent.bottom; bottomMargin: 5 }
+                width: 5; height: 5; rotation: 45; color: ThemeTokens.accent
             }
             Rectangle { anchors.fill: parent; color: ThemeTokens.selectedHover; visible: windowDrop.containsDrag; z: -1 }
             DropArea {
@@ -95,13 +103,13 @@ Item {
                     root.draggedId = tab.modelData
                 }
                 onPositionChanged: function(mouse) {
-                    if (!pressed || root.service.searchText.trim()) return
+                    if (!pressed || root.service.searchText.trim() || tab.pinned) return
                     var p = mapToItem(root, mouse.x, mouse.y)
                     if (!root.dragging && Math.abs(p.x - pressX) < 6) return
                     root.dragX = Math.max(-10, Math.min(root.width - tab.width + 10, p.x - grabX))
                     root.dragging = true
                     var target = Math.max(0, Math.min(root.originalOrder.length - 1, Math.round(root.dragX / root.pitch)))
-                    root.previewOrder = Model.insertWorkspace(root.originalOrder, tab.modelData, target)
+                    root.previewOrder = Model.insertWorkspacePinned(root.originalOrder, tab.modelData, target, root.service.pinnedWorkspaces)
                 }
                 onReleased: {
                     if (root.dragging) root.service.reorderWorkspaces(root.originalOrder, root.previewOrder)
@@ -110,6 +118,27 @@ Item {
                 }
                 onCanceled: root.cancel()
             }
+        }
+    }
+    // Opens the next free workspace number.
+    Item {
+        id: newTab
+        x: root.service.workspaceIds.length * root.pitch; width: 44; height: 38
+        Accessible.role: Accessible.Button
+        Accessible.name: "Open a new workspace"
+        Accessible.onPressAction: root.service.openNewWorkspace()
+        Rectangle {
+            anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; topMargin: 4 }
+            width: 34; height: 14; radius: 3
+            color: newTabMouse.containsMouse ? ThemeTokens.selected : "transparent"
+            Text { anchors.centerIn: parent; text: "+"; color: newTabMouse.containsMouse ? ThemeTokens.accent : ThemeTokens.secondary; font.pixelSize: 15 }
+        }
+        Text { anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 2 } text: "new"; color: ThemeTokens.subdued; font.pixelSize: 9 }
+        MouseArea {
+            id: newTabMouse
+            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+            enabled: !root.service.workspaceReordering && !root.dragging
+            onClicked: root.service.openNewWorkspace()
         }
     }
 }

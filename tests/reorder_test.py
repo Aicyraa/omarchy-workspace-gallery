@@ -14,6 +14,9 @@ class ReorderTests(unittest.TestCase):
         self.assertEqual(state,{1:'b',2:'c',3:'a'})
         r.transact(r.permutation([1,2,3],[3,1,2]),[{'id':i} for i in state],change,lambda moves:None)
         self.assertEqual(state,{1:'a',2:'b',3:'c'})
+    def test_journal_keeps_no_window_titles(self):
+        workspace = {'id': 2, 'name': '2', 'monitor': 'DP-1', 'monitorID': 0, 'windows': 3, 'lastwindow': '0xabc', 'lastwindowtitle': 'Bank - password'}
+        self.assertEqual(r.journal_snapshot([workspace]), [{'id': 2, 'name': '2', 'monitor': 'DP-1', 'monitorID': 0, 'windows': 3}])
     def test_reject_duplicates(self):
         with self.assertRaises(ValueError): r.permutation([1,2], [1,1])
     def test_layouts_preserved_and_empty_slots(self):

@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  logic:
+    name: Model, reorder helper and manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test "tests/*.test.cjs"
+      - run: python3 tests/reorder_test.py
+      - run: python3 -m py_compile deploy.py rollback.py reorder_workspaces.py
+
+  qml:
+    name: QML UI tests
+    runs-on: ubuntu-latest
+    # Omarchy ships Qt 6.9+, so the tests run on Arch rather than the older Qt in Ubuntu.
+    container: archlinux:latest
+    steps:
+      - run: pacman -Syu --noconfirm qt6-declarative qt6-shadertools git
+      - uses: actions/checkout@v4
+      - name: Run QtTest suites
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QPA_PLATFORMTHEME: ""
+          QT_QUICK_CONTROLS_STYLE: Basic
+          QT_QUICK_BACKEND: software
+        run: /usr/lib/qt6/bin/qmltestrunner -input tests/ui -import tests/ui/imports -o -,txt

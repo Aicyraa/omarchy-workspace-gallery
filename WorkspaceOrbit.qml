@@ -74,7 +74,8 @@ Item {
                 event.accepted = true
                 return
             }
-            root.wheelDelta += event.angleDelta.y || event.angleDelta.x
+            // Two-finger swipes arrive on either axis; follow whichever dominates.
+            root.wheelDelta += Math.abs(event.angleDelta.x) > Math.abs(event.angleDelta.y) ? event.angleDelta.x : event.angleDelta.y
             if (Math.abs(root.wheelDelta) >= 90) {
                 root.service.moveWorkspace(root.wheelDelta > 0 ? -1 : 1)
                 root.wheelDelta = 0
@@ -93,8 +94,8 @@ Item {
         readonly property real cp: Math.cos(root.cameraElevation * Math.PI / 180)
         readonly property real sp: Math.sin(root.cameraElevation * Math.PI / 180)
         // The size cap grows with zoom, so zooming enlarges cards, not just spacing.
-        readonly property real cardWidth: Math.min(310 * root.cameraZoom, radius * 0.78,
-            2 * radius * Math.sin(Math.PI / Math.max(3, root.count)) * 0.78) * root.service.previewScale
+        readonly property real cardWidth: Math.min(430 * root.cameraZoom, radius * 0.96,
+            2 * radius * Math.sin(Math.PI / Math.max(3, root.count)) * 0.9) * root.service.previewScale
         readonly property real cardHeight: cardWidth * root.service.monitorHeight / root.service.monitorWidth
         readonly property real thickness: cardWidth * 0.035
         // Raising the camera lifts the ring slightly, so its front edge stays on screen.
@@ -161,7 +162,7 @@ Item {
                 readonly property bool leftFacing: stage.facesCamera(frame, {x: -frame.t.x, y: 0, z: -frame.t.z}, 0, stage.cardHeight / 2)
                 readonly property bool rightFacing: stage.facesCamera(frame, {x: frame.t.x, y: 0, z: frame.t.z}, stage.cardWidth, stage.cardHeight / 2)
                 z: depth * 1000 + index * 0.01
-                opacity: 0.65 + depth * 0.35
+                opacity: 0.45 + depth * 0.55
                 // The slab's sides sit behind the preview, so the card gains real thickness.
                 Shape {
                     anchors.fill: parent
@@ -197,12 +198,20 @@ Item {
                     layer.smooth: true
                     layer.mipmap: true
                     layer.samples: 4
-                    layer.textureSize: Qt.size(Math.min(1280, Math.ceil(width * 2)), Math.min(720, Math.ceil(height * 2)))
+                    layer.textureSize: root.service.highQuality === true
+                        ? Qt.size(Math.min(1920, Math.ceil(width * 3)), Math.min(1080, Math.ceil(height * 3)))
+                        : Qt.size(Math.min(1280, Math.ceil(width * 2)), Math.min(720, Math.ceil(height * 2)))
                     transform: Matrix4x4 { matrix: stage.faceMatrix(unit.frame) }
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: root.service.enterWorkspace(unit.modelData, "")
+                    }
+                    // The selected slab gets an accent outline so it stands out in the ring.
+                    Rectangle {
+                        anchors.fill: parent; z: 1500
+                        visible: unit.selected
+                        color: "transparent"; border.width: 2; border.color: ThemeTokens.alpha(ThemeTokens.accent, 0.9)
                     }
                     // Window previews remain independently clickable above the workspace.
                     WorkspaceScene {

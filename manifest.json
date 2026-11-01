@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.aicyraa.workspace-gallery",
   "name": "Workspace Gallery",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "author": "Aicyraa",
   "description": "Searchable, named workspace previews with configurable motion",
   "kinds": [

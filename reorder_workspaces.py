@@ -4,6 +4,7 @@ import fcntl
 import json
 import os
 from pathlib import Path
+import stat
 import subprocess
 import sys
 import tempfile
@@ -20,6 +21,9 @@ def permutation(slots, order):
 
 def query():
     return json.loads(subprocess.check_output(['hyprctl', 'workspaces', '-j'], timeout=5))
+
+def journal_snapshot(snapshot):
+    return [{key: workspace.get(key) for key in ('id', 'name', 'monitor', 'monitorID', 'windows')} for workspace in snapshot]
 
 def change_id(source, target):
     command = 'hl.dsp.workspace.change_id({workspace="%d",id=%d})' % (source, target)
@@ -51,22 +55,25 @@ def main():
     data = json.loads(sys.argv[1])
     mapping = permutation(data['slots'], data['order'])
     state = Path.home() / '.local/state/omarchy/workspace-reorder'
-    state.mkdir(parents=True, exist_ok=True)
+    state.mkdir(mode=0o700, parents=True, exist_ok=True)
+    state.chmod(0o700)
     with (state / '.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         snapshot = query()
+        # Recovery needs only numbering, never window titles or addresses.
+        recorded = journal_snapshot(snapshot)
         stamp = str(time.time_ns())
         record = state / ('transaction-' + stamp + '.json')
         def journal(moves):
             fd, name = tempfile.mkstemp(dir=state)
             with os.fdopen(fd, 'w') as output:
-                json.dump({'mapping': mapping, 'workspaces': snapshot, 'completedMoves': moves}, output)
+                json.dump({'mapping': mapping, 'workspaces': recorded, 'completedMoves': moves}, output)
             os.replace(name, record)
         journal([])
         moves = transact(mapping, snapshot, change_id, journal)
         # Keep custom names with their workspace, preserving unrelated config.
         try:
-            config_path = Path.home() / '.config/omarchy/shell.json'
+            config_path = (Path.home() / '.config/omarchy/shell.json').resolve()
             config = json.loads(config_path.read_text())
             entry = next((e for e in config.get('plugins', []) if isinstance(e, dict) and e.get('id') == 'io.github.aicyraa.workspace-gallery'), None)
             old_names = dict(entry.get('workspaceNames', {})) if entry else {}
@@ -76,6 +83,7 @@ def main():
                 fd, temporary = tempfile.mkstemp(dir=config_path.parent, prefix='.reorder-config-')
                 try:
                     with os.fdopen(fd, 'w') as output: json.dump(config, output, indent=2); output.write('\n')
+                    os.chmod(temporary, stat.S_IMODE(config_path.stat().st_mode))
                     os.replace(temporary, config_path)
                 finally:
                     if os.path.exists(temporary): os.unlink(temporary)

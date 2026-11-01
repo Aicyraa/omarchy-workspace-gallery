@@ -92,6 +92,45 @@ Item {
             })
         }
     }
+    function closeWindow(w) {
+        if (!w || workspaceReordering || windowMoveBusy || windowDragAddress || !windows.includes(w)) return false
+        const address = Model.windowAddress(w.address)
+        if (!address) return false
+        // A polite close request: the application can still ask to save its work.
+        Hyprland.dispatch(Hyprland.usingLua ? 'hl.dsp.window.close({window="address:' + address + '"})' : "closewindow address:" + address)
+        refresh.restart()
+        return true
+    }
+    function moveSelectedWindow(delta) {
+        const list = selectedWindows
+        if (!list.length) return false
+        const w = list[Math.min(selectedWindow, list.length - 1)]
+        const ids = allWorkspaceIds
+        const from = ids.indexOf(w.workspace ? w.workspace.id : selectedWorkspace)
+        if (from < 0 || ids.length < 2) return false
+        const target = ids[(from + delta + ids.length) % ids.length]
+        if (!moveWindowToWorkspace(w.address, target)) return false
+        selectWorkspace(target)
+        return true
+    }
+    function togglePinnedWorkspace(id) {
+        const pinned = Model.togglePinned(pinnedWorkspaces, id)
+        if (!saveSettings({pinnedWorkspaces: pinned})) return false
+        pinnedWorkspaces = pinned
+        return true
+    }
+    function openNewWorkspace() {
+        const id = Model.nextWorkspaceId(allWorkspaceIds)
+        if (workspaceReordering || !id) return
+        pendingWorkspace = id
+        pendingWindow = ""
+        dismiss()
+        activation.restart()
+    }
+    function jumpToIndex(index) {
+        const ids = workspaceIds
+        if (index >= 0 && index < ids.length) selectWorkspace(ids[index])
+    }
     Timer { id: windowMoveMessage; interval: 5000; onTriggered: root.windowMoveFeedback = "" }
     property bool workspaceReordering: false
     property var reorderSlots: []
@@ -118,12 +157,19 @@ Item {
         reorderSelection = selectedWorkspace
         settingsError = "Rearranging workspaces…"
         workspaceReordering = true
-        reorderProcess.command = ["python3", String(Qt.resolvedUrl("reorder_workspaces.py")).replace(/^file:\/\//, ""), JSON.stringify({slots: slots, order: order})]
+        reorderProcess.command = ["python3", decodeURIComponent(String(Qt.resolvedUrl("reorder_workspaces.py")).replace(/^file:\/\//, "")), JSON.stringify({slots: slots, order: order})]
         reorderProcess.running = true
+        reorderWatchdog.restart()
         return true
+    }
+    // The overview holds exclusive keyboard focus, so a stuck reorder must never leave it unclosable.
+    Timer {
+        id: reorderWatchdog; interval: 30000
+        onTriggered: if (root.workspaceReordering) { reorderProcess.running = false; root.finishReorder('{"ok":false,"error":"Workspace reorder timed out"}') }
     }
     function finishReorder(text) {
         if (!workspaceReordering) return
+        reorderWatchdog.stop()
         var result
         try { result = JSON.parse(text) } catch (error) { result = {ok: false, error: "Could not read workspace reorder result"} }
         if (result.ok) {
@@ -159,6 +205,12 @@ Item {
     property real previewScale: 1
     property int animationDuration: 300
     property bool reducedMotion: false
+    property bool showKeyGuide: true
+    property bool liveOtherWorkspaces: false
+    property string previewQuality: "standard"
+    readonly property bool highQuality: previewQuality === "high"
+    property string defaultView: "classic"
+    property var pinnedWorkspaces: []
     property string settingsError: ""
     property var persistedEntry: ({id: "io.github.aicyraa.workspace-gallery"})
     property bool preferencesLoaded: false
@@ -190,10 +242,11 @@ Item {
     }
     readonly property var selectedWindows: windowsFor(selectedWorkspace)
     readonly property int matchCount: windows.filter(w => onMonitor(w) && matches(w)).length
+    readonly property int currentWorkspace: Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : 0
     function onMonitor(w) { return w.monitor && monitor && w.monitor.id === monitor.id }
     function matches(w) {
         const entry = entryFor(w)
-        return Model.matches(searchText, w.title, entry ? entry.name : "", w.lastIpcObject.class)
+        return Model.matches(searchText, w.title, entry ? entry.name : "", w.lastIpcObject.class, w.workspace ? workspaceName(w.workspace.id) : "")
     }
     function windowsFor(id) { return rawWindowsFor(id).filter(w => matches(w)) }
     function rawWindowsFor(id) {
@@ -206,7 +259,10 @@ Item {
         if (cls === "org.omarchy.agent") return DesktopEntries.byId("Alacritty")
         return DesktopEntries.heuristicLookup(cls)
     }
-    function icon(entry) { return Quickshell.iconPath(entry && entry.icon ? entry.icon : "application-x-executable", true) || Quickshell.iconPath("application-x-executable") }
+    function icon(entry) {
+        const found = Model.safeImageSource(Quickshell.iconPath(entry && entry.icon ? entry.icon : "application-x-executable", true))
+        return found || Model.safeImageSource(Quickshell.iconPath("application-x-executable"))
+    }
     property int pendingWorkspace: 0
     property string pendingWindow: ""
     function enterWorkspace(id, address) {
@@ -258,6 +314,25 @@ Item {
         persistedEntry = merged
         return true
     }
+    function setPreference(key, value) {
+        if (key === "showKeyGuide" && typeof value === "boolean") {
+            if (!saveSettings({showKeyGuide: value})) return false
+            showKeyGuide = value; return true
+        }
+        if (key === "liveOtherWorkspaces" && typeof value === "boolean") {
+            if (!saveSettings({liveOtherWorkspaces: value})) return false
+            liveOtherWorkspaces = value; return true
+        }
+        if (key === "previewQuality" && (value === "standard" || value === "high")) {
+            if (!saveSettings({previewQuality: value})) return false
+            previewQuality = value; return true
+        }
+        if (key === "defaultView" && (value === "classic" || value === "orbit")) {
+            if (!saveSettings({defaultView: value})) return false
+            defaultView = value; return true
+        }
+        return false
+    }
     function renameWorkspace(id, value) {
         const names = Model.renamed(workspaceNames, id, value)
         if (!saveSettings({workspaceNames: names})) return false
@@ -291,6 +366,11 @@ Item {
                 root.previewScale = settings.previewScale
                 root.animationDuration = settings.animationDuration
                 root.reducedMotion = settings.reducedMotion
+                root.showKeyGuide = settings.showKeyGuide
+                root.liveOtherWorkspaces = settings.liveOtherWorkspaces
+                root.previewQuality = settings.previewQuality
+                root.defaultView = settings.defaultView
+                root.pinnedWorkspaces = settings.pinnedWorkspaces
             } catch (error) { console.warn("Overview preferences:", error) }
         }
     }

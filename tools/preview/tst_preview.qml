@@ -15,6 +15,9 @@ Rectangle {
         property var workspaceIds: [1, 2, 3, 4, 5]
         property int selectedWorkspace: 1
         property int selectedWindow: 0
+        property int currentWorkspace: 1
+        property var pinnedWorkspaces: [3]
+        property bool showKeyGuide: true
         property int monitorWidth: 1366
         property int monitorHeight: 768
         property var monitorData: ({x: 0, y: 0})
@@ -99,8 +102,8 @@ Rectangle {
         spacing: 6
         Repeater {
             model: scene.mode === 'normal'
-                ? [{keys: ['←', '→'], label: 'Workspaces'}, {keys: ['Tab'], label: 'Windows'}, {keys: ['Enter'], label: 'Open'}, {keys: ['F2'], label: 'Rename'}, {keys: ['Type'], label: 'Search'}]
-                : [{keys: ['Drag'], label: 'Orbit'}, {keys: ['Ctrl + Scroll'], label: 'Zoom'}, {keys: ['←', '→'], label: 'Workspaces'}, {keys: ['Enter'], label: 'Open'}]
+                ? [{keys: ['←', '→'], label: 'Workspaces'}, {keys: ['Tab'], label: 'Windows'}, {keys: ['Enter'], label: 'Open'}, {keys: ['F2'], label: 'Rename'}, {keys: ['Type'], label: 'Search'}, {keys: ['F1'], label: 'Hide guide'}]
+                : [{keys: ['Drag'], label: 'Orbit'}, {keys: ['Ctrl + Scroll'], label: 'Zoom'}, {keys: ['←', '→'], label: 'Workspaces'}, {keys: ['Enter'], label: 'Open'}, {keys: ['F1'], label: 'Hide guide'}]
             Row {
                 required property var modelData
                 spacing: 12

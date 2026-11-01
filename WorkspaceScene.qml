@@ -59,6 +59,19 @@ Item {
             wrapMode: Text.WordWrap
         }
     }
+    // Marks the workspace you are on right now.
+    Rectangle {
+        anchors.fill: parent
+        visible: root.service.currentWorkspace === root.workspaceId
+        color: "transparent"; border.width: root.miniature ? 1 : 2; border.color: ThemeTokens.alpha(ThemeTokens.accent, 0.85)
+        z: 2000
+        Rectangle {
+            visible: !root.miniature
+            anchors { left: parent.left; top: parent.top; margins: 8 }
+            width: currentLabel.implicitWidth + 16; height: 20; radius: 10; color: ThemeTokens.accent
+            Text { id: currentLabel; anchors.centerIn: parent; text: "Current"; color: ThemeTokens.onAccent; font.pixelSize: 10; font.weight: Font.Medium }
+        }
+    }
     Rectangle {
         anchors.fill: parent
         color: ThemeTokens.alpha(ThemeTokens.accent, 0.12)

@@ -14,6 +14,10 @@ Item {
         property bool windowMoveBusy: false
         property string searchText: ""
         property var workspaceIds: [1,2,3]
+        property var pinnedWorkspaces: []
+        property int currentWorkspace: 0
+        property bool showKeyGuide: true
+        property bool highQuality: false
         property int selectedWorkspace: 1
         property string windowDragAddress: ""
         property string windowDragTitle: ""
@@ -42,6 +46,10 @@ Item {
             if (!windowDragAddress) return
             windowDragEnded(canceled);windowDragAddress='';windowDragWorkspace=0
         }
+        property var closed: []
+        property int newWorkspaces: 0
+        function closeWindow(w) { closed = closed.concat([w.title]); return true }
+        function openNewWorkspace() { newWorkspaces++ }
         function moveWindowToWorkspace(address,id) { moves=moves.concat([{address:address,id:id}]);return true }
     }
     App.WorkspaceTabs { id: tabs; x:220;y:20;width:implicitWidth;height:implicitHeight;service:service }
@@ -65,7 +73,7 @@ Item {
     }
     TestCase {
         name:'WorkspaceDrag';when:windowShown
-        function init() { scene.forceActiveFocus();service.windowMoveBusy=false; service.moves=[];service.orders=[];service.activations=0;service.pinned=false;service.windowDragAddress='';service.windowDragWorkspace=0;service.selectedWorkspace=1 }
+        function init() { scene.forceActiveFocus();service.windowMoveBusy=false; service.moves=[];service.orders=[];service.activations=0;service.pinned=false;service.windowDragAddress='';service.windowDragWorkspace=0;service.selectedWorkspace=1;service.pinnedWorkspaces=[];service.closed=[];service.newWorkspaces=0 }
         function test_click_focuses_without_moving() { mouseClick(preview,70,40);compare(service.activations,1);compare(service.moves.length,0) }
         function test_window_drop_on_tab() {
             mousePress(preview,70,40)
@@ -104,6 +112,31 @@ Item {
         function test_tab_drag_shifts_order() {
             mousePress(tabs,22,18);mouseMove(tabs,40,18,20,Qt.LeftButton);mouseMove(tabs,129,18,30,Qt.LeftButton);mouseRelease(tabs,129,18)
             compare(service.orders.length,1);compare(JSON.stringify(service.orders[0]),'[2,3,1]')
+        }
+        function test_close_button_closes_without_activating() {
+            mouseMove(preview,100,50);wait(300)
+            mouseClick(preview,162,18)
+            compare(service.closed.length,1);compare(service.closed[0],'Test window');compare(service.activations,0)
+        }
+        function test_close_button_needs_a_resting_pointer() {
+            preview.closeReady=false // a tap lands before the button has armed
+            mouseClick(preview,162,18)
+            compare(service.closed.length,0)
+        }
+        function test_middle_click_closes_and_never_drags() {
+            mouseClick(preview,70,40,Qt.MiddleButton)
+            compare(service.closed.length,1);compare(service.activations,0);compare(service.windowDragAddress,'')
+        }
+        function test_new_workspace_tab() { mouseClick(tabs,184,19);compare(service.newWorkspaces,1) }
+        function test_pinned_tab_cannot_be_dragged() {
+            service.pinnedWorkspaces=[1]
+            mousePress(tabs,22,18);mouseMove(tabs,40,18,20,Qt.LeftButton);mouseMove(tabs,129,18,30,Qt.LeftButton);mouseRelease(tabs,129,18)
+            compare(service.orders.length,0)
+        }
+        function test_unpinned_tab_skips_over_pinned() {
+            service.pinnedWorkspaces=[2]
+            mousePress(tabs,22,18);mouseMove(tabs,40,18,20,Qt.LeftButton);mouseMove(tabs,129,18,30,Qt.LeftButton);mouseRelease(tabs,129,18)
+            compare(service.orders.length,1);compare(JSON.stringify(service.orders[0]),'[3,2,1]')
         }
     }
 }
