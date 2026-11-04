@@ -109,6 +109,23 @@ Drag a window preview onto another workspace to move it. Closing a window sends 
 
 ---
 
+### Touchpad gestures (optional)
+
+The overview exposes IPC commands, so Hyprland swipes can drive it. In `~/.config/hypr/bindings.lua`:
+
+```lua
+local gallery = "io.github.aicyraa.workspace-gallery"
+hl.gesture({ fingers = 3, direction = "up",    action = function() hl.dispatch(hl.dsp.exec_cmd("omarchy-shell shell toggle " .. gallery)) end })
+hl.gesture({ fingers = 3, direction = "left",  action = function() hl.dispatch(hl.dsp.exec_cmd("omarchy-shell " .. gallery .. ".perspective next")) end })
+hl.gesture({ fingers = 3, direction = "right", action = function() hl.dispatch(hl.dsp.exec_cmd("omarchy-shell " .. gallery .. ".perspective previous")) end })
+hl.gesture({ fingers = 3, direction = "down",  action = function() hl.dispatch(hl.dsp.exec_cmd("omarchy-shell " .. gallery .. ".perspective close")) end })
+hl.gesture({ fingers = 4, direction = "up",    action = function() hl.dispatch(hl.dsp.exec_cmd("omarchy-shell " .. gallery .. ".perspective toggle")) end })
+```
+
+`next`, `previous` and `close` do nothing while the overview is closed. Swap `next` and `previous` for natural-scroll direction.
+
+---
+
 ### Configuration
 
 - **Rename:** <kbd>F2</kbd>. Names are up to 48 characters. An empty name restores `Workspace N`.
