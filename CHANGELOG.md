@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- IPC `next`, `previous` and `close` on `io.github.aicyraa.workspace-gallery.perspective`, so touchpad gestures and scripts can step through workspaces and dismiss the overview without synthesizing key presses. They return `false` when the overview is closed.
+
 ## 1.3.0
 
 ### Security

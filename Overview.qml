@@ -31,6 +31,9 @@ Item {
         target: "io.github.aicyraa.workspace-gallery.perspective"
         function toggle(): bool { return root.togglePerspective() }
         function select(id: int): void { if (root.opened && root.service && root.service.allWorkspaceIds.indexOf(id) >= 0) root.service.selectWorkspace(id) }
+        function next(): bool { return root.opened && root.service ? (root.service.moveWorkspace(1), true) : false }
+        function previous(): bool { return root.opened && root.service ? (root.service.moveWorkspace(-1), true) : false }
+        function close(): bool { return root.opened && root.service ? (root.service.dismiss(), true) : false }
         function reorder(order: string): bool {
             const requested = Model.parseOrderPayload(order)
             return root.opened && root.service && requested ? root.service.reorderWorkspaces(root.service.allWorkspaceIds, requested) : false
