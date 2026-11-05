@@ -8,7 +8,7 @@ Searchable workspace previews and a 3D workspace ring for Omarchy.
 
 <p>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow.svg"></a>
-  <img alt="Version 1.3.0" src="https://img.shields.io/badge/version-1.3.0-8ab4f8">
+  <img alt="Version 1.4.0" src="https://img.shields.io/badge/version-1.4.0-8ab4f8">
   <img alt="Omarchy Quattro" src="https://img.shields.io/badge/Omarchy-Quattro-a78bfa">
   <img alt="Hyprland 0.56.2" src="https://img.shields.io/badge/Hyprland-0.56.2-58e1ff">
   <img alt="Quickshell 0.3.2" src="https://img.shields.io/badge/Quickshell-0.3.2-7ee787">
@@ -26,13 +26,13 @@ https://github.com/user-attachments/assets/26bdeebb-0f9c-48dc-b6ae-9da0cce2a47e
 
 ---
 
-> ### Updated to 1.3.0
+> ### Updated to 1.4.0
 >
-> **New:** close windows from their preview, pin workspaces, jump with <kbd>Alt</kbd> + <kbd>1</kbd>–<kbd>9</kbd>, open a new workspace from the `+` tab, move windows with <kbd>Shift</kbd> + arrows, a "Current" marker, search by workspace name, larger ring cards, and optional live and high-quality previews.
+> **New in 1.4.0:** IPC commands `next`, `previous` and `close`, so touchpad gestures and scripts can drive the overview (contributed by [RajdeepVerma](https://github.com/RajdeepVerma)). See [Touchpad gestures](#touchpad-gestures-optional).
+>
+> **In 1.3.0:** close windows from their preview, pin workspaces, jump with <kbd>Alt</kbd> + <kbd>1</kbd>–<kbd>9</kbd>, open a new workspace from the `+` tab, move windows with <kbd>Shift</kbd> + arrows, a "Current" marker, search by workspace name, larger ring cards, and optional live and high-quality previews.
 > **Security:** window titles are always drawn as plain text, so markup in a title can no longer trigger a remote request. Recovery journals no longer store window titles.
 > **Fixed:** Ctrl + scroll zoom and scrolling on touchpads and mice.
->
-> **Since 1.3.0:** IPC commands `next`, `previous` and `close`, so touchpad gestures and scripts can drive the overview (contributed by [RajdeepVerma](https://github.com/RajdeepVerma)). See [Touchpad gestures](#touchpad-gestures-optional).
 >
 > Already installed? Run `omarchy plugin update io.github.aicyraa.workspace-gallery`, then `omarchy restart shell`. Your names and preferences are kept. See the [changelog](CHANGELOG.md) for details.
 
