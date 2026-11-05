@@ -14,7 +14,7 @@ Searchable workspace previews and a 3D workspace ring for Omarchy.
   <img alt="Quickshell 0.3.2" src="https://img.shields.io/badge/Quickshell-0.3.2-7ee787">
 </p>
 
-[Install](#install) · [Controls](#controls) · [Configuration](#configuration) · [Troubleshooting](#troubleshooting)
+[Install](#install) · [Controls](#controls) · [Touchpad gestures](#touchpad-gestures-optional) · [Configuration](#configuration) · [Troubleshooting](#troubleshooting)
 
 </div>
 
@@ -32,6 +32,8 @@ https://github.com/user-attachments/assets/26bdeebb-0f9c-48dc-b6ae-9da0cce2a47e
 > **Security:** window titles are always drawn as plain text, so markup in a title can no longer trigger a remote request. Recovery journals no longer store window titles.
 > **Fixed:** Ctrl + scroll zoom and scrolling on touchpads and mice.
 >
+> **Since 1.3.0:** IPC commands `next`, `previous` and `close`, so touchpad gestures and scripts can drive the overview (contributed by [RajdeepVerma](https://github.com/RajdeepVerma)). See [Touchpad gestures](#touchpad-gestures-optional).
+>
 > Already installed? Run `omarchy plugin update io.github.aicyraa.workspace-gallery`, then `omarchy restart shell`. Your names and preferences are kept. See the [changelog](CHANGELOG.md) for details.
 
 ---
@@ -48,6 +50,7 @@ https://github.com/user-attachments/assets/26bdeebb-0f9c-48dc-b6ae-9da0cce2a47e
 | New workspace | Open the next free workspace from the `+` tab. |
 | Names and motion | Name workspaces. Adjust preview size, duration, and reduced motion. |
 | Key guide | A shortcut legend you can hide with <kbd>F1</kbd>. |
+| Gestures and scripts | IPC commands let Hyprland touchpad gestures or your own scripts open, step through and close the overview. |
 | Live or still previews | Other workspaces stay still by default. Turn on live previews to keep video moving, and high quality for smoother text. |
 
 ---
@@ -123,6 +126,24 @@ hl.gesture({ fingers = 4, direction = "up",    action = function() hl.dispatch(h
 ```
 
 `next`, `previous` and `close` do nothing while the overview is closed. Swap `next` and `previous` for natural-scroll direction.
+
+#### IPC commands
+
+Run them as `omarchy-shell io.github.aicyraa.workspace-gallery.perspective <command>`. Use `omarchy-shell shell toggle io.github.aicyraa.workspace-gallery` to open or close the flat overview.
+
+| Command | What it does |
+| --- | --- |
+| `toggle` | Opens the ring view. While the overview is open, switches between the ring and the flat view. |
+| `next` / `previous` | Select the next or previous workspace, like <kbd>→</kbd> and <kbd>←</kbd>. Returns `false` while the overview is closed. |
+| `close` | Dismisses the overview, like <kbd>Esc</kbd>. Returns `false` while it is already closed. |
+| `select <id>` | Selects workspace `<id>` if it exists. |
+| `activate` | Opens the selected workspace or window, like <kbd>Enter</kbd>. |
+| `undo` | Undoes the last window move or reorder, like <kbd>Ctrl</kbd> + <kbd>Z</kbd>. |
+| `moveWindow <address> <id>` | Moves a window to workspace `<id>`. `<address>` is the hex address from `hyprctl clients -j`. |
+| `reorder '{"order":[2,1,3]}'` | Reorders the workspaces. The list must contain every current workspace number once. |
+| `status` | Prints the current state as JSON. |
+
+Commands that need the overview open do nothing, or return `false`, while it is closed. Addresses and workspace numbers are validated before anything is sent to Hyprland.
 
 ---
 
