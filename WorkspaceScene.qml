@@ -6,21 +6,31 @@ Item {
     required property var service
     required property int workspaceId
     property bool miniature: false
+    property bool inOrbit: false
+    property real contentOpacity: 1
+    property real depthDim: 0
     readonly property var windows: service.windowsFor(workspaceId)
     readonly property real factor: Math.min(width / service.monitorWidth, height / service.monitorHeight)
+    readonly property bool isCurrent: service.currentWorkspace === workspaceId
+    readonly property bool showEmptyGuide: windows.length === 0 && !service.searchText.trim()
+    readonly property real emptyGuideMargin: miniature ? 8 : 18
+
     Item {
+        id: frame
         width: root.service.monitorWidth * root.factor
         height: root.service.monitorHeight * root.factor
         anchors.centerIn: parent
         Shape {
             id: emptyGuide
+            objectName: "empty-workspace-guide"
             anchors.fill: parent
-            anchors.margins: root.miniature ? 8 : 18
-            visible: root.windows.length === 0 && !root.service.searchText.trim()
+            anchors.margins: root.emptyGuideMargin
+            visible: root.showEmptyGuide
             antialiasing: true
+            preferredRendererType: Shape.CurveRenderer
             ShapePath {
                 fillColor: "transparent"
-                strokeColor: ThemeTokens.alpha(ThemeTokens.text, root.miniature ? 0.85 : 0.65)
+                strokeColor: ThemeTokens.alpha(ThemeTokens.text, (root.miniature ? 0.85 : 0.65) * root.contentOpacity)
                 strokeWidth: root.miniature ? 1.5 : 2
                 strokeStyle: ShapePath.DashLine
                 dashPattern: [6, 5]
@@ -39,6 +49,7 @@ Item {
                 required property int index
                 property var geometry: modelData.lastIpcObject
                 service: root.service; windowHandle: modelData; miniature: root.miniature
+                inOrbit: root.inOrbit; depthDim: root.depthDim
                 x: Math.max(0, ((geometry.at ? geometry.at[0] : 0) - (service.monitorData.x || 0)) * root.factor)
                 y: Math.max(0, ((geometry.at ? geometry.at[1] : 0) - (service.monitorData.y || 0)) * root.factor)
                 width: Math.max(8, (geometry.size ? geometry.size[0] : 400) * root.factor)
@@ -53,23 +64,31 @@ Item {
             width: Math.max(1, parent.width - 32)
             visible: root.windows.length === 0
             text: root.service.searchText.trim() ? (root.miniature ? "" : "No matching windows") : root.miniature ? "+" : "Empty workspace · Enter to switch"
-            color: ThemeTokens.secondary
+            color: ThemeTokens.alpha(ThemeTokens.secondary, root.contentOpacity)
             font.pixelSize: root.miniature ? 24 : Math.min(18, Math.max(12, parent.width / 26))
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
         }
-    }
-    // Marks the workspace you are on right now.
-    Rectangle {
-        anchors.fill: parent
-        visible: root.service.currentWorkspace === root.workspaceId
-        color: "transparent"; border.width: root.miniature ? 1 : 2; border.color: ThemeTokens.alpha(ThemeTokens.accent, 0.85)
-        z: 2000
+        // Marks the workspace you are on right now.
         Rectangle {
-            visible: !root.miniature
-            anchors { left: parent.left; top: parent.top; margins: 8 }
-            width: currentLabel.implicitWidth + 16; height: 20; radius: 10; color: ThemeTokens.accent
-            Text { id: currentLabel; anchors.centerIn: parent; text: "Current"; color: ThemeTokens.onAccent; font.pixelSize: 10; font.weight: Font.Medium }
+            id: currentMarker
+            objectName: "current-workspace-marker"
+            anchors.fill: parent
+            visible: root.isCurrent
+            color: "transparent"
+            antialiasing: true
+            border.width: root.windows.length > 0 ? (root.miniature ? 1 : 2) : 0
+            border.color: ThemeTokens.alpha(ThemeTokens.accent, 0.85)
+            z: 2000
+            Rectangle {
+                id: currentBadge
+                objectName: "current-workspace-badge"
+                visible: !root.miniature
+                anchors { left: parent.left; top: parent.top; margins: root.showEmptyGuide ? root.emptyGuideMargin + 14 : 8 }
+                width: currentLabel.implicitWidth + 16; height: 20; radius: 10
+                antialiasing: true; color: ThemeTokens.accent
+                Text { id: currentLabel; anchors.centerIn: parent; text: "Current"; color: ThemeTokens.onAccent; font.pixelSize: 10; font.weight: Font.Medium }
+            }
         }
     }
     Rectangle {

@@ -5,4 +5,5 @@ Item {
     property bool live: false
     property bool paintCursor: false
     readonly property bool hasContent: false
+    readonly property size sourceSize: Qt.size(0, 0)
 }

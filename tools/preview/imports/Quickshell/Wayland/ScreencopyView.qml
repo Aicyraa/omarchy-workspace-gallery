@@ -6,6 +6,7 @@ Item {
     property bool live: false
     property bool paintCursor: false
     readonly property bool hasContent: captureSource !== null
+    readonly property size sourceSize: captureSource ? Qt.size(captureSource.width, captureSource.height) : Qt.size(0, 0)
     readonly property string kind: captureSource ? captureSource.kind : 'editor'
     Item {
         width: root.captureSource ? root.captureSource.width : 800

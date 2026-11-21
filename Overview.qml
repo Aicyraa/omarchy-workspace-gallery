@@ -92,7 +92,7 @@ Item {
             sourceComponent: Item {
                 function focusSettings() { settingsPane.focusFirst() }
                 function beginRename() { root.settingsVisible = false; nameEditor.beginEdit() }
-                function focusSearch() { searchInput.forceActiveFocus(); searchInput.cursorPosition = searchInput.text.length }
+                function focusSearch() { searchInput.text = root.service.searchText; searchInput.moveToEnd(); searchInput.forceActiveFocus() }
                 opacity: 0
                 Component.onCompleted: opacity = 1
                 Behavior on opacity { NumberAnimation { duration: root.service.motionDuration(150) } }
@@ -108,16 +108,24 @@ Item {
                     width: Math.min(430, parent.width - 120); height: 38
                     radius: 12; color: ThemeTokens.surface; border.width: 1; border.color: ThemeTokens.border
                     Text { x: 13; anchors.verticalCenter: parent.verticalCenter; text: "⌕"; color: ThemeTokens.secondary; font.pixelSize: 23 }
-                    Text { visible: !searchInput.text && !searchInput.preeditText; x: 39; anchors.verticalCenter: parent.verticalCenter; text: "Search windows by app or title"; color: ThemeTokens.subdued; font.pixelSize: 12 }
-                    TextInput {
+                    Text { visible: !searchInput.text; x: 39; anchors.verticalCenter: parent.verticalCenter; text: "Search windows by app or title"; color: ThemeTokens.subdued; font.pixelSize: 12 }
+                    SafeTextInput {
                         id: searchInput
                         anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; leftMargin: 39; rightMargin: 14 }
-                        text: root.service.searchText; color: ThemeTokens.text
-                        font.pixelSize: 12; clip: true; selectByMouse: true; maximumLength: 256
+                        height: parent.height - 8
+                        color: ThemeTokens.text; font.pixelSize: 12; maximumLength: 256
                         selectionColor: ThemeTokens.selectedHover; selectedTextColor: ThemeTokens.text
+                        blinkCursor: !root.service.reducedMotion
                         Accessible.name: "Search windows"
-                        onTextChanged: root.service.setSearch(text)
+                        Component.onCompleted: text = root.service.searchText
+                        onTextEdited: value => root.service.setSearch(value)
                         onAccepted: root.service.activate()
+                        Connections {
+                            target: root.service
+                            function onSearchTextChanged() {
+                                if (searchInput.text !== root.service.searchText) searchInput.text = root.service.searchText
+                            }
+                        }
                         Keys.onPressed: event => {
                             if (event.key === Qt.Key_Escape) { root.clearSearch(); event.accepted = true }
                             else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
@@ -303,12 +311,12 @@ Item {
             }
         }
         Loader {
-            anchors { fill: parent; topMargin: 90; bottomMargin: 94 }
+            anchors { fill: parent; topMargin: 76; bottomMargin: 80 }
             active: root.opened && root.service !== null && (root.viewMode === "orbit" || root.cameraLift > 0.001)
             enabled: root.viewMode === "orbit"
             opacity: root.cameraLift
-            scale: root.service && root.service.reducedMotion ? 1 : 1.15 - root.cameraLift * 0.25
-            transform: Translate { y: root.service && root.service.reducedMotion ? 0 : (1 - root.cameraLift) * 45 - root.cameraLift * 8 }
+            scale: root.service && root.service.reducedMotion ? 1 : 1.12 - root.cameraLift * 0.12
+            transform: Translate { y: root.service && root.service.reducedMotion ? 0 : (1 - root.cameraLift) * 45 }
             sourceComponent: WorkspaceOrbit { service: root.service }
         }
         Rectangle {

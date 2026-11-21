@@ -40,12 +40,14 @@ Item {
         Accessible.role: Accessible.Button
         Accessible.name: "Rename " + root.service.workspaceName(root.service.selectedWorkspace)
     }
-    TextInput {
+    SafeTextInput {
         id: editor; visible: root.editing
         anchors { left: parent.left; right: saveButton.left; verticalCenter: parent.verticalCenter; leftMargin: 12; rightMargin: 8 }
+        height: parent.height - 6
         color: ThemeTokens.text; selectionColor: ThemeTokens.selectedHover
         selectedTextColor: ThemeTokens.text; font.pixelSize: 14
-        maximumLength: 48; clip: true; selectByMouse: true
+        maximumLength: 48
+        blinkCursor: !(root.service && root.service.reducedMotion)
         Accessible.name: "Workspace name"
         Keys.onEscapePressed: event => { root.cancel(); event.accepted = true }
         onAccepted: root.commit()

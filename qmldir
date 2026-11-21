@@ -9,3 +9,4 @@ OverviewSettings 1.0 OverviewSettings.qml
 WorkspaceOrbit 1.0 WorkspaceOrbit.qml
 
 WorkspaceTabs 1.0 WorkspaceTabs.qml
+SafeTextInput 1.0 SafeTextInput.qml

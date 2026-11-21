@@ -19,6 +19,10 @@ test('no rich-text, code-loading or network APIs', () => {
   assert.deepStrictEqual(offenders(/Text\.(RichText|StyledText|AutoText|MarkdownText)|\bAutoText\b|openUrlExternally|createQmlObject|createComponent|Qt\.include|\beval\(|new Function|XMLHttpRequest|WebEngine|WebSocket/), [])
 })
 
+test('no native Qt text input fields (avoids automatic Wayland clipboard reads)', () => {
+  assert.deepStrictEqual(offenders(/\b(TextInput|TextField|TextEdit|TextArea)\b/), [])
+})
+
 test('no hard-coded remote URLs', () => {
   assert.deepStrictEqual(offenders(/https?:\/\/|ftp:\/\/|wss?:\/\//), [])
 })

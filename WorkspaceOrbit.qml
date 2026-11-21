@@ -94,7 +94,7 @@ Item {
         readonly property real cp: Math.cos(root.cameraElevation * Math.PI / 180)
         readonly property real sp: Math.sin(root.cameraElevation * Math.PI / 180)
         // The size cap grows with zoom, so zooming enlarges cards, not just spacing.
-        readonly property real cardWidth: Math.min(430 * root.cameraZoom, radius * 0.96,
+        readonly property real cardWidth: Math.min(540 * root.cameraZoom, radius * 0.96,
             2 * radius * Math.sin(Math.PI / Math.max(3, root.count)) * 0.9) * root.service.previewScale
         readonly property real cardHeight: cardWidth * root.service.monitorHeight / root.service.monitorWidth
         readonly property real thickness: cardWidth * 0.035
@@ -126,16 +126,18 @@ Item {
             var o = view({x: f.origin.x, y: f.origin.y - focal * sp, z: f.origin.z - focal * cp})
             var a = view(f.t), b = view({x: 0, y: -1, z: 0})
             var cx = width / 2, cy = centreY
+            var inv = o.z ? 1 / o.z : 1
             return Qt.matrix4x4(
-                focal * a.x + cx * a.z, focal * b.x + cx * b.z, 0, focal * o.x + cx * o.z,
-                -focal * a.y + cy * a.z, -focal * b.y + cy * b.z, 0, -focal * o.y + cy * o.z,
+                (focal * a.x + cx * a.z) * inv, (focal * b.x + cx * b.z) * inv, 0, (focal * o.x + cx * o.z) * inv,
+                (-focal * a.y + cy * a.z) * inv, (-focal * b.y + cy * b.z) * inv, 0, (-focal * o.y + cy * o.z) * inv,
                 0, 0, 1, 0,
-                a.z, b.z, 0, o.z)
+                a.z * inv, b.z * inv, 0, o.z * inv)
         }
         // Screen outline of one side face of the slab, from the front edge to the back edge.
         function edge(f, x0, y0, x1, y1) {
-            return [screen(world(f, x0, y0, 0)), screen(world(f, x1, y1, 0)),
-                    screen(world(f, x1, y1, thickness)), screen(world(f, x0, y0, thickness))]
+            var p0 = screen(world(f, x0, y0, 0))
+            return [p0, screen(world(f, x1, y1, 0)),
+                    screen(world(f, x1, y1, thickness)), screen(world(f, x0, y0, thickness)), p0]
         }
         // A side is drawn only when its outward normal points toward the camera.
         function facesCamera(f, n, x, y) {
@@ -151,7 +153,9 @@ Item {
                 anchors.fill: stage
                 readonly property real theta: (index - root.phase) * Math.PI * 2 / Math.max(1, root.count) - root.cameraYaw * Math.PI / 180
                 readonly property real depth: (Math.cos(theta) + 1) / 2
+                readonly property real depthFactor: 0.45 + depth * 0.55
                 readonly property bool selected: root.service.selectedWorkspace === modelData
+                readonly property bool hasWindows: root.service.windowsFor(modelData).length > 0
                 readonly property var frame: stage.cardFrame(theta)
                 readonly property var topEdge: stage.edge(frame, 0, 0, stage.cardWidth, 0)
                 readonly property var bottomEdge: stage.edge(frame, 0, stage.cardHeight, stage.cardWidth, stage.cardHeight)
@@ -162,28 +166,29 @@ Item {
                 readonly property bool leftFacing: stage.facesCamera(frame, {x: -frame.t.x, y: 0, z: -frame.t.z}, 0, stage.cardHeight / 2)
                 readonly property bool rightFacing: stage.facesCamera(frame, {x: frame.t.x, y: 0, z: frame.t.z}, stage.cardWidth, stage.cardHeight / 2)
                 z: depth * 1000 + index * 0.01
-                opacity: 0.45 + depth * 0.55
                 // The slab's sides sit behind the preview, so the card gains real thickness.
                 Shape {
                     anchors.fill: parent
+                    antialiasing: true
+                    preferredRendererType: Shape.CurveRenderer
                     ShapePath {
                         strokeColor: "transparent"
-                        fillColor: unit.topFacing ? (unit.selected ? ThemeTokens.alpha(ThemeTokens.accent, 0.6) : ThemeTokens.alpha(ThemeTokens.text, 0.45)) : "transparent"
+                        fillColor: unit.topFacing ? (unit.selected ? ThemeTokens.alpha(ThemeTokens.accent, 0.6 * unit.depthFactor) : ThemeTokens.alpha(ThemeTokens.text, 0.45 * unit.depthFactor)) : "transparent"
                         PathPolyline { path: unit.topEdge }
                     }
                     ShapePath {
                         strokeColor: "transparent"
-                        fillColor: unit.rightFacing ? ThemeTokens.alpha(ThemeTokens.text, 0.14) : "transparent"
+                        fillColor: unit.rightFacing ? ThemeTokens.alpha(ThemeTokens.text, 0.14 * unit.depthFactor) : "transparent"
                         PathPolyline { path: unit.rightEdge }
                     }
                     ShapePath {
                         strokeColor: "transparent"
-                        fillColor: unit.leftFacing ? ThemeTokens.alpha(ThemeTokens.text, 0.22) : "transparent"
+                        fillColor: unit.leftFacing ? ThemeTokens.alpha(ThemeTokens.text, 0.22 * unit.depthFactor) : "transparent"
                         PathPolyline { path: unit.leftEdge }
                     }
                     ShapePath {
                         strokeColor: "transparent"
-                        fillColor: unit.bottomFacing ? ThemeTokens.alpha(ThemeTokens.text, 0.08) : "transparent"
+                        fillColor: unit.bottomFacing ? ThemeTokens.alpha(ThemeTokens.text, 0.08 * unit.depthFactor) : "transparent"
                         PathPolyline { path: unit.bottomEdge }
                     }
                 }
@@ -192,32 +197,29 @@ Item {
                     objectName: "orbit-workspace-" + unit.modelData
                     width: stage.cardWidth
                     height: stage.cardHeight
-                    // Render each workspace once at 2x resolution, then filter its
-                    // transformed surface. The texture is bounded for older GPUs.
-                    layer.enabled: true
-                    layer.smooth: true
-                    layer.mipmap: true
-                    layer.samples: 4
-                    layer.textureSize: root.service.highQuality === true
-                        ? Qt.size(Math.min(1920, Math.ceil(width * 3)), Math.min(1080, Math.ceil(height * 3)))
-                        : Qt.size(Math.min(1280, Math.ceil(width * 2)), Math.min(720, Math.ceil(height * 2)))
                     transform: Matrix4x4 { matrix: stage.faceMatrix(unit.frame) }
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: root.service.enterWorkspace(unit.modelData, "")
                     }
-                    // The selected slab gets an accent outline so it stands out in the ring.
+                    // The selected slab gets an accent outline; occupied cards keep a crisp rim.
                     Rectangle {
                         anchors.fill: parent; z: 1500
-                        visible: unit.selected
-                        color: "transparent"; border.width: 2; border.color: ThemeTokens.alpha(ThemeTokens.accent, 0.9)
+                        antialiasing: true
+                        visible: unit.selected || unit.hasWindows
+                        color: "transparent"
+                        border.width: unit.selected ? 2 : 1
+                        border.color: unit.selected ? ThemeTokens.alpha(ThemeTokens.accent, 0.92) : ThemeTokens.alpha(ThemeTokens.text, 0.20 * unit.depthFactor)
                     }
                     // Window previews remain independently clickable above the workspace.
                     WorkspaceScene {
                         anchors.fill: parent
                         service: root.service; workspaceId: unit.modelData
                         miniature: !unit.selected
+                        inOrbit: true
+                        contentOpacity: unit.depthFactor
+                        depthDim: (1 - unit.depth) * 0.42
                     }
                 }
             }

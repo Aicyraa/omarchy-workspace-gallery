@@ -37,7 +37,7 @@ shutil.copy2(bindings, backup / 'bindings.lua')
 if target.exists():
     shutil.copytree(target, backup / 'plugin')
 target.mkdir(parents=True, exist_ok=True)
-for name in ['manifest.json', 'ThemeTokens.qml', 'qmldir', 'Service.qml', 'WorkspaceModel.js', 'WorkspaceName.qml', 'OverviewSettings.qml', 'Overview.qml', 'WorkspaceOrbit.qml', 'WorkspaceScene.qml', 'WindowPreview.qml', 'WorkspaceTabs.qml', 'reorder_workspaces.py']:
+for name in ['manifest.json', 'ThemeTokens.qml', 'qmldir', 'Service.qml', 'WorkspaceModel.js', 'SafeTextInput.qml', 'WorkspaceName.qml', 'OverviewSettings.qml', 'Overview.qml', 'WorkspaceOrbit.qml', 'WorkspaceScene.qml', 'WindowPreview.qml', 'WorkspaceTabs.qml', 'reorder_workspaces.py']:
     shutil.copy2(source / name, target / name)
 shutil.copytree(source / "icons", target / "icons", dirs_exist_ok=True)
 # Remove retired dock components only after the existing plugin is backed up.

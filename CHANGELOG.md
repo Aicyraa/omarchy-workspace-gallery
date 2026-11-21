@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.1
+
+### Security
+- Replaced native Qt `TextInput` fields in workspace search and workspace renaming with a pure-QML `SafeTextInput` component that never reads the clipboard, addressing the automatic Wayland clipboard-read finding.
+
+### Improved
+- Higher visual quality in the 3D ring (`WorkspaceOrbit`) via single-pass perspective rendering, `Shape.CurveRenderer` anti-aliased slab sides and empty guides, normalized projection matrix, full `1.0` resting scale, and compact orbit captions/badges.
+
+### Fixed
+- Removed the solid accent border on empty current workspaces and added padding between the dashed empty guide and the `Current` badge.
+
 ## 1.4.0
 
 ### Added
